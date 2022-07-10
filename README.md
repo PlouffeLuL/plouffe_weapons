@@ -1,4 +1,4 @@
-# plouffe_weapons
+# Plouffe_weapons
 
 # **[Discord](https://discord.gg/xJVCY9AvvW)**
 
