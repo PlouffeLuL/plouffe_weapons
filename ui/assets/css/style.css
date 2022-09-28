@@ -5,13 +5,6 @@
   transform: translateY(-50%) translateX(-50%);
 }
 
-.crosshair-hitmarker {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translateY(-50%) translateX(-50%);
-}
-
 .crosshair {
   opacity: 85%;
   width:6vh;
