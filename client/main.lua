@@ -3,39 +3,39 @@ local Callback <const> = exports.plouffe_lib:Get("Callback")
 local Interface <const> = exports.plouffe_lib:Get("Interface")
 local Lang <const> = exports.plouffe_lib:Get("Lang")
 
-local PlayerPedId = PlayerPedId
-local AttachEntityToEntity = AttachEntityToEntity
-local GetPedBoneIndex = GetPedBoneIndex
+local PlayerPedId <const> = PlayerPedId
+local AttachEntityToEntity <const> = AttachEntityToEntity
+local GetPedBoneIndex <const> = GetPedBoneIndex
 
-local DeleteEntity = DeleteEntity
-local GetEntityBoneIndexByName = GetEntityBoneIndexByName
-local SetEntityCollision = SetEntityCollision
+local DeleteEntity <const> = DeleteEntity
+local GetEntityBoneIndexByName <const> = GetEntityBoneIndexByName
+local SetEntityCollision <const> = SetEntityCollision
 
-local GetPlayerServerId = GetPlayerServerId
-local PlayerId = PlayerId
+local GetPlayerServerId <const> = GetPlayerServerId
+local PlayerId <const> = PlayerId
 
-local GetCurrentPedWeapon = GetCurrentPedWeapon
+local GetCurrentPedWeapon <const> = GetCurrentPedWeapon
 
-local IsPedShooting = IsPedShooting
-local IsPlayerFreeAiming = IsPlayerFreeAiming
-local GetGameTimer = GetGameTimer
-local DisablePlayerFiring = DisablePlayerFiring
-local DisableControlAction = DisableControlAction
-local SendNUIMessage = SendNUIMessage
-local SetFollowVehicleCamViewMode = SetFollowVehicleCamViewMode
+local IsPedShooting <const> = IsPedShooting
+local IsPlayerFreeAiming <const> = IsPlayerFreeAiming
+local GetGameTimer <const> = GetGameTimer
+local DisablePlayerFiring <const> = DisablePlayerFiring
+local DisableControlAction <const> = DisableControlAction
+local SendNUIMessage <const> = SendNUIMessage
+local SetFollowVehicleCamViewMode <const> = SetFollowVehicleCamViewMode
 
-local IsPedBeingStunned = IsPedBeingStunned
-local SetPedToRagdoll = SetPedToRagdoll
-local IsEntityInWater = IsEntityInWater
+local IsPedBeingStunned <const> = IsPedBeingStunned
+local SetPedToRagdoll <const> = SetPedToRagdoll
+local IsEntityInWater <const> = IsEntityInWater
 
-local SetTimecycleModifierStrength = SetTimecycleModifierStrength
-local SetTimecycleModifier = SetTimecycleModifier
-local ShakeGameplayCam = ShakeGameplayCam
+local SetTimecycleModifierStrength <const> = SetTimecycleModifierStrength
+local SetTimecycleModifier <const> = SetTimecycleModifier
+local ShakeGameplayCam <const> = ShakeGameplayCam
 
-local StopGameplayCamShaking = StopGameplayCamShaking
-local ClearTimecycleModifier = ClearTimecycleModifier
+local StopGameplayCamShaking <const> = StopGameplayCamShaking
+local ClearTimecycleModifier <const> = ClearTimecycleModifier
 
-local Wait = Wait
+local Wait <const> = Wait
 
 local pickupList = {
     `PICKUP_AMMO_BULLET_MP`,
@@ -167,255 +167,257 @@ local pickupList = {
 local gsrThread = false
 local warnActive = false
 
-local Weap = {tazerAmmo = 1, tazerModel = `weapon_stungun`}
-
-Weap.TazerEffect = setmetatable({
-    effectStrength = 0.0,
-    shakeStrength = 0.0,
-    timeEffect = 1000,
-    active = false,
-    threadActive = false,
-}, {
-    __call = function(self)
-        if self.active then
-            return
-        end
-
-        self.active = true
-
-        self.effectStrength += 0.2
-        self.shakeStrength += 0.2
-        self.timeEffect += 1000
-
-        if self.effectStrength > 0.8 then
-            self.effectStrength = 0.8
-        end
-
-        if self.shakeStrength > 1.0 then
-            self.shakeStrength = 1.0
-        end
-
-        if self.timeEffect > 6000 then
-            self.timeEffect = 6000
-        end
-
-        SetTimecycleModifierStrength(self.effectStrength)
-        SetTimecycleModifier("BarryFadeOut")
-
-        repeat
-            ShakeGameplayCam('SMALL_EXPLOSION_SHAKE',0.2)
-            Wait(100)
-            SetPedToRagdoll(Weap.cache.ped, self.timeEffect, self.timeEffect, 0, true, true, true)
-        until IsPedBeingStunned(Weap.cache.ped,0) ~= true
-
-        SetPedToRagdoll(Weap.cache.ped, self.timeEffect, self.timeEffect, 0, true, true, true)
-
-        ShakeGameplayCam("FAMILY5_Weapons_TRIP_SHAKE", self.shakeStrength)
-
-        self.active = false
-
-        if self.threadActive then
-            return
-        end
-
-        self.threadActive = true
-
-        CreateThread(function()
-            while self.shakeStrength > 0.0 or self.effectStrength > 0.0 do
-                Wait(1000 * 15)
-
-                if self.effectStrength > 0.0 then
-                    self.effectStrength -= 0.1
-                end
-
-                if self.shakeStrength > 0.0 then
-                    self.shakeStrength -= 0.1
-                end
-
-                SetTimecycleModifier("BarryFadeOut")
-                SetTimecycleModifierStrength(self.effectStrength)
+local Weap = {
+    tazerAmmo = 1,
+    tazerModel = `weapon_stungun`,
+    TazerEffect = setmetatable({
+        effectStrength = 0.0,
+        shakeStrength = 0.0,
+        timeEffect = 1000,
+        active = false,
+        threadActive = false,
+    }, {
+        __call = function(self)
+            if self.active then
+                return
             end
 
-            StopGameplayCamShaking()
-            ClearTimecycleModifier()
+            self.active = true
 
-            self.threadActive = false
-        end)
-    end
-})
+            self.effectStrength += 0.2
+            self.shakeStrength += 0.2
+            self.timeEffect += 1000
 
-Weap.weaponsOnBack = {
-    equiped = nil,
-    current = {
-        [1] = {offset = 0.12},
-        [2] = {offset = 0.06},
-        [3] = {offset = 0.00},
-        [4] = {offset = -0.06},
-        [5] = {offset = -0.12}
-    },
-    exists = {},
-    weapons = {
-        WEAPON_MK47FM = {
-            model = "MK47FluffysMods",
+            if self.effectStrength > 0.8 then
+                self.effectStrength = 0.8
+            end
+
+            if self.shakeStrength > 1.0 then
+                self.shakeStrength = 1.0
+            end
+
+            if self.timeEffect > 6000 then
+                self.timeEffect = 6000
+            end
+
+            SetTimecycleModifierStrength(self.effectStrength)
+            SetTimecycleModifier("BarryFadeOut")
+
+            repeat
+                ShakeGameplayCam('SMALL_EXPLOSION_SHAKE',0.2)
+                Wait(100)
+                SetPedToRagdoll(Weap.cache.ped, self.timeEffect, self.timeEffect, 0, true, true, true)
+            until IsPedBeingStunned(Weap.cache.ped,0) ~= true
+
+            SetPedToRagdoll(Weap.cache.ped, self.timeEffect, self.timeEffect, 0, true, true, true)
+
+            ShakeGameplayCam("FAMILY5_Weapons_TRIP_SHAKE", self.shakeStrength)
+
+            self.active = false
+
+            if self.threadActive then
+                return
+            end
+
+            self.threadActive = true
+
+            CreateThread(function()
+                while self.shakeStrength > 0.0 or self.effectStrength > 0.0 do
+                    Wait(1000 * 15)
+
+                    if self.effectStrength > 0.0 then
+                        self.effectStrength -= 0.1
+                    end
+
+                    if self.shakeStrength > 0.0 then
+                        self.shakeStrength -= 0.1
+                    end
+
+                    SetTimecycleModifier("BarryFadeOut")
+                    SetTimecycleModifierStrength(self.effectStrength)
+                end
+
+                StopGameplayCamShaking()
+                ClearTimecycleModifier()
+
+                self.threadActive = false
+            end)
+        end
+    }),
+    weaponsOnBack = {
+        equiped = nil,
+        current = {
+            [1] = {offset = 0.12},
+            [2] = {offset = 0.06},
+            [3] = {offset = 0.00},
+            [4] = {offset = -0.06},
+            [5] = {offset = -0.12}
         },
+        exists = {},
+        components = {},
+        weapons = {
+            WEAPON_MK47FM = {
+                model = "MK47FluffysMods",
+            },
 
-        WEAPON_G36 = {
-            model = "markomods-g36",
-            components = {
-                COMPONENT_MARKOMODSG36_STOCK_01 = {
-                    bone = "AAPStock",
-                    model = "markomods-g36-stock1"
-                },
+            WEAPON_G36 = {
+                model = "markomods-g36",
+                components = {
+                    COMPONENT_MARKOMODSG36_STOCK_01 = {
+                        bone = "AAPStock",
+                        model = "markomods-g36-stock1"
+                    },
 
-                COMPONENT_MARKOMODSG36_BARREL_01 = {
-                    bone = "AAPSupp",
-                    model = "markomods-g36-barrel1"
+                    COMPONENT_MARKOMODSG36_BARREL_01 = {
+                        bone = "AAPSupp",
+                        model = "markomods-g36-barrel1"
+                    }
                 }
-            }
-        },
+            },
 
-        WEAPON_AKM = {
-            model = "akm",
-            components = {
-                COMPONENT_AKM_HANDGUARD_01 = {
-                    bone = 'WAPGrip',
-                    model = 'akmhandguard1'
-                },
-                COMPONENT_AKM_PISTOLGRIP_01 = {
-                    bone = 'WAPGrip_2',
-                    model = 'akmpistolgrip1'
-                },
-                COMPONENT_AKM_STOCK_01 = {
-                    bone = 'WAPSock',
-                    model = 'akmstock1'
-                },
-                COMPONENT_AKM_DUSTCOVER_01 = {
-                    bone = 'WAPFlshLasr',
-                    model = 'akmdustcover1'
+            WEAPON_AKM = {
+                model = "akm",
+                components = {
+                    COMPONENT_AKM_HANDGUARD_01 = {
+                        bone = 'WAPGrip',
+                        model = 'akmhandguard1'
+                    },
+                    COMPONENT_AKM_PISTOLGRIP_01 = {
+                        bone = 'WAPGrip_2',
+                        model = 'akmpistolgrip1'
+                    },
+                    COMPONENT_AKM_STOCK_01 = {
+                        bone = 'WAPSock',
+                        model = 'akmstock1'
+                    },
+                    COMPONENT_AKM_DUSTCOVER_01 = {
+                        bone = 'WAPFlshLasr',
+                        model = 'akmdustcover1'
+                    }
                 }
-            }
-        },
+            },
 
-        WEAPON_MDR = {
-            model = "w_ar_MDR"
-        },
+            WEAPON_MDR = {
+                model = "w_ar_MDR"
+            },
 
-        WEAPON_GRENADELAUNCHER_SMOKE = {
-            model = "w_lr_grenadelauncher"
-        },
+            WEAPON_GRENADELAUNCHER_SMOKE = {
+                model = "w_lr_grenadelauncher"
+            },
 
-        WEAPON_LTL = {
-            model = "w_sg_ltl"
-        },
+            WEAPON_LTL = {
+                model = "w_sg_ltl"
+            },
 
-        WEAPON_SR25 = {
-            model = "sr25"
-        },
+            WEAPON_SR25 = {
+                model = "sr25"
+            },
 
-        WEAPON_50BEOWULF = {
-            model = "ar15_beowulf",
-            components = {
-                COMPONENT_BEOWULF_BODY_01 = {
-                    bone = 'WAPGun',
-                    model = 'ar15body1'
+            WEAPON_50BEOWULF = {
+                model = "ar15_beowulf",
+                components = {
+                    COMPONENT_BEOWULF_BODY_01 = {
+                        bone = 'WAPGun',
+                        model = 'ar15body1'
+                    }
                 }
-            }
-        },
+            },
 
-        WEAPON_SCARSC = {
-            model = "scarsc"
-        },
+            WEAPON_SCARSC = {
+                model = "scarsc"
+            },
 
-        WEAPON_PMXFM = {
-            model = "pmx_fluffymods"
-        },
+            WEAPON_PMXFM = {
+                model = "pmx_fluffymods"
+            },
 
-        WEAPON_SCAR17FM = {
-            model = "ScarFluffysMods",
-            components = {
-                COMPONENT_SCAR_BODY_01 = {
-                    bone = 'WAPGun',
-                    model = 'MainBody1'
-                },
-                COMPONENT_SCAR_BARREL_01 = {
-                    bone = 'WAPSupp',
-                    model = 'scar_barrel3'
+            WEAPON_SCAR17FM = {
+                model = "ScarFluffysMods",
+                components = {
+                    COMPONENT_SCAR_BODY_01 = {
+                        bone = 'WAPGun',
+                        model = 'MainBody1'
+                    },
+                    COMPONENT_SCAR_BARREL_01 = {
+                        bone = 'WAPSupp',
+                        model = 'scar_barrel3'
+                    }
                 }
-            }
-        },
+            },
 
-        WEAPON_M4A1FM = {
-            model = "M4A1_FluffysMods",
-            components = {
-                COMPONENT_M4A1FM_BARREL_01 = {
-                    bone = 'WAPSupp',
-                    model = 'M4A1Barrel1_FluffysMods'
+            WEAPON_M4A1FM = {
+                model = "M4A1_FluffysMods",
+                components = {
+                    COMPONENT_M4A1FM_BARREL_01 = {
+                        bone = 'WAPSupp',
+                        model = 'M4A1Barrel1_FluffysMods'
+                    }
                 }
-            }
-        },
+            },
 
-        WEAPON_MPX = {
-            model = "w_sb_mpx"
-        },
+            WEAPON_MPX = {
+                model = "w_sb_mpx"
+            },
 
-        WEAPON_P90FM = {
-            model = "P90FluffysMods",
-            components = {
-                COMPONENT_P90_BARREL_01 = {
-                    bone = 'WAPSupp',
-                    model = 'P90Barrel1FluffysMods'
+            WEAPON_P90FM = {
+                model = "P90FluffysMods",
+                components = {
+                    COMPONENT_P90_BARREL_01 = {
+                        bone = 'WAPSupp',
+                        model = 'P90Barrel1FluffysMods'
+                    }
                 }
-            }
-        },
+            },
 
-        WEAPON_DRACO = {
-            model = "w_ar_draco"
-        },
+            WEAPON_DRACO = {
+                model = "w_ar_draco"
+            },
 
-        WEAPON_SCORPIONEVO = {
-            model = "w_sb_scorpionevo"
-        },
+            WEAPON_SCORPIONEVO = {
+                model = "w_sb_scorpionevo"
+            },
 
-        WEAPON_ASVAL = {
-            model = "asval",
-            components = {
-                COMPONENT_ASVAL_STOCK_01 = {
-                    bone = 'WAPGrip_2',
-                    model = 'asval_stock_01'
+            WEAPON_ASVAL = {
+                model = "asval",
+                components = {
+                    COMPONENT_ASVAL_STOCK_01 = {
+                        bone = 'WAPGrip_2',
+                        model = 'asval_stock_01'
+                    },
                 },
             },
-        },
 
-        WEAPON_AKS74U = {
-            model = "aks74u",
-            components = {
-                COMPONENT_AKS74U_HANDGUARD_01 = {
-                    bone = 'WAPBarrel',
-                    model = 'aks74u_handguard_01'
-                },
-                COMPONENT_AKS74U_STOCK_01 = {
-                    bone = 'WAPScop_2',
-                    model = 'aks74u_stock_01'
+            WEAPON_AKS74U = {
+                model = "aks74u",
+                components = {
+                    COMPONENT_AKS74U_HANDGUARD_01 = {
+                        bone = 'WAPBarrel',
+                        model = 'aks74u_handguard_01'
+                    },
+                    COMPONENT_AKS74U_STOCK_01 = {
+                        bone = 'WAPScop_2',
+                        model = 'aks74u_stock_01'
+                    },
                 },
             },
-        },
 
-        WEAPON_MCXSPEAR = {
-            model = "mcxspear",
-            components = {
-                COMPONENT_MCXSPEAR_BODY_01 = {
-                    bone = 'WAPGrip_2',
-                    model = 'mcxspear_body_01'
-                },
-                COMPONENT_MCXSPEAR_STOCK_01 = {
-                    bone = 'WAPScop_2',
-                    model = 'mcxspear_stock_01'
+            WEAPON_MCXSPEAR = {
+                model = "mcxspear",
+                components = {
+                    COMPONENT_MCXSPEAR_BODY_01 = {
+                        bone = 'WAPGrip_2',
+                        model = 'mcxspear_body_01'
+                    },
+                    COMPONENT_MCXSPEAR_STOCK_01 = {
+                        bone = 'WAPScop_2',
+                        model = 'mcxspear_stock_01'
+                    }
                 }
-            }
-        },
+            },
 
-        WEAPON_MP9A = {
-            model = "w_sb_MP9a"
+            WEAPON_MP9A = {
+                model = "w_sb_MP9a"
+            }
         }
     }
 }
@@ -425,12 +427,20 @@ local function wake()
     for k,v in pairs(list) do
         Weap[k] = v
     end
+
+    Weap.weaponsOnBack.weapons = list.onBack
+    Weap.onBack = nil
 end
 
 function Weap.Start()
     Weap:FindFramework()
 
+    Weap.components = json.decode(LoadResourceFile('plouffe_weapons', "data/components.json"))
+
     if Weap.inventoryFramework == 'ox_inventory' then
+        local ox_items = exports.ox_inventory:Items()
+        local weapon_objects = {}
+
         Weap.GetWeapons = function()
             local items = {}
             local data = {}
@@ -452,6 +462,29 @@ function Weap.Start()
             return data
         end
 
+        local coords = GetEntityCoords(PlayerPedId())
+
+        for k,v in pairs(Weap.weaponsOnBack.weapons) do
+            if Utils:AssureModel(v.model) then
+                ---@diagnostic disable-next-line: redundant-parameter
+                weapon_objects[k] = CreateWeaponObject(k, 1, coords.x, coords.y, 0.0, false, 1.0, 0, 0, 0)
+            end
+        end
+
+        for k,v in pairs(ox_items) do
+            local component_data = v.client?.component
+            if component_data then
+                for _,hash in pairs(component_data) do
+                    for x,y in pairs(weapon_objects) do
+                        if DoesWeaponTakeWeaponComponent(joaat(x),hash) then
+
+                        end
+                    end
+                end
+            end
+        end
+
+
         AddEventHandler('ox_inventory:currentWeapon',function(data)
             if Weap.weaponsOnBack.equiped then
                 Weap:AddWeaponOnBack(Weap.weaponsOnBack.equiped)
@@ -465,6 +498,7 @@ function Weap.Start()
         end)
 
         RegisterNetEvent('ox_inventory:updateInventory', function(changes)
+            Utils:Debug('ox_inventory:updateInventory')
             for slot,data in pairs(changes) do
                 if (data == false and (Weap.weaponsOnBack.exists[slot] or (Weap.weaponsOnBack.equiped and Weap.weaponsOnBack.equiped.slot == slot))) or (Weap.weaponsOnBack.exists[slot] and data) then
                     Weap:Clear(slot)
@@ -472,6 +506,7 @@ function Weap.Start()
                     if Weap.weaponsOnBack.equiped and Weap.weaponsOnBack.equiped.metadata.serial == data.metadata.serial then
                         Weap.weaponsOnBack.equiped = data
                     elseif not Weap.weaponsOnBack.equiped or (Weap.weaponsOnBack.equiped and Weap.weaponsOnBack.equiped.slot ~= slot) then
+                        Utils:Debug({'Creating weapon', json.encode(data, {indent = true})})
                         Weap:AddWeaponOnBack(data)
                     end
                 end
@@ -557,6 +592,8 @@ function Weap:RegisterEvents()
                 SetPedConfigFlag(self.cache.ped, 438, true)
                 SetPedSuffersCriticalHits(self.cache.ped, true)
             end
+
+            Utils:Debug('Creating weapons from cache')
 
             self:RefreshWeapons()
 
@@ -681,7 +718,7 @@ function Weap:IsArmed()
                     aimingDelay = time
                 elseif aimCheck and not isAiming then
                     if time - aimingDelay < 250 then
-                        SetPedToRagdoll(self.cache.ped, 500, 500, 2, 0, 0, 0)
+                        SetPedToRagdoll(self.cache.ped, 500, 500, 2, false, false, false)
                     end
                     aimCheck = false
                 end
@@ -694,6 +731,8 @@ function Weap:IsArmed()
     end)
 end
 
+---comment
+---@param ammo number
 function Weap.ReloadTazer(ammo)
     ammo = tonumber(ammo) or 1
 
@@ -717,6 +756,8 @@ function Weap.ReloadTazer(ammo)
 end
 exports("ReloadTazer", Weap.ReloadTazer)
 
+---comment
+---@param inWater boolean
 function Weap.WashGsr(inWater)
     if (inWater and not IsEntityInWater(Weap.cache.ped)) then
         return
@@ -790,7 +831,7 @@ function Weap.GsrTest()
         Interface.Notifications.Show({
             style = "error",
             header = "Gsr",
-            
+
             message = Lang.gsr_negative
         })
     else
@@ -922,6 +963,11 @@ function Weap.InvalidProfileSetting()
     Interface.Notifications.Remove("weapon_ke_4")
 end
 
+---comment
+---@param victim number
+---@param culprit number
+---@param weapon number
+---@param baseDamage number
 function Weap.IsPedStunned(victim, culprit, weapon, baseDamage)
     if victim ~= Weap.cache.ped or weapon ~= Weap.tazerModel then
         return
@@ -930,6 +976,8 @@ function Weap.IsPedStunned(victim, culprit, weapon, baseDamage)
     Weap.TazerEffect()
 end
 
+---comment
+---@param slot? number
 function Weap:Clear(slot)
     if slot and self.weaponsOnBack.exists[slot] then
         local data = self.weaponsOnBack.current[self.weaponsOnBack.exists[slot]]
@@ -947,7 +995,11 @@ function Weap:Clear(slot)
     end
 end
 
-function Weap:CreateWeapon(data)
+---comment
+---@param data table
+---@return number
+---@return table
+function Weap:CreateWeapon(data,objectComponents)
     local entitys = setmetatable({}, {
         __call = function(self)
             for k,v in pairs(self) do
@@ -961,7 +1013,13 @@ function Weap:CreateWeapon(data)
     entitys[#entitys+1] = weaponEntity
 
     if data.components then
-        for component, data in pairs(data.components) do
+        for k,v in pairs(data.components) do
+            local data = Weap.components[v:upper()]
+            if not data then 
+                Utils:Debug({"Invalid weapon component", v:upper()})
+                break
+            end
+
             local bone = GetEntityBoneIndexByName(weaponEntity, data.bone)
             local componentEntity = Utils:CreateProp(data.model,{x = self.cache.pedCoords.x, y = self.cache.pedCoords.y, z = self.cache.pedCoords.z - 5.0}, 0.0, true, true)
             SetEntityCollision(componentEntity, false, false)
@@ -970,9 +1028,15 @@ function Weap:CreateWeapon(data)
         end
     end
 
+    if objectComponents then
+        Utils:Debug(objectComponents)
+    end
+
     return weaponEntity, entitys
 end
 
+---comment
+---@param data table
 function Weap:AddWeaponOnBack(data)
     local data = type(data) == "table" and data or {name = data, slot = data}
 
@@ -993,7 +1057,7 @@ function Weap:AddWeaponOnBack(data)
         return
     end
 
-    local weaponEntity, entitys = self:CreateWeapon(self.weaponsOnBack.weapons[data.name])
+    local weaponEntity, entitys = self:CreateWeapon(self.weaponsOnBack.weapons[data.name], data.metadata?.components)
 
     self.weaponsOnBack.current[slot] = {offset =  self.weaponsOnBack.current[slot].offset, slot = data.slot, entitys = entitys}
 
@@ -1012,3 +1076,26 @@ end
 
 CreateThread(wake)
 exports.plouffe_lib:OnFrameworkLoaded(Weap.Start)
+
+RegisterCommand('test_weapon', function(source, args, raw)
+    local coords = GetEntityCoords(PlayerPedId())
+    local weapon_objects = {}
+
+    if Utils:AssureModel('W_AR_CARBINERIFLE') then
+        ---@diagnostic disable-next-line: redundant-parameter
+        weapon_objects['WEAPON_CARBINERIFLE'] = CreateWeaponObject('WEAPON_CARBINERIFLE', 1, coords.x, coords.y, coords.z, false, 1.0, 0, 0, 0)
+    end
+
+    local COMPONENT_MARKOMODSG36_STOCK_01 = {
+        bone = "AAPStock",
+        model = "markomods-g36-stock1"
+    }
+
+    GetEntityBoneIndexByName(weapon_objects['WEAPON_CARBINERIFLE'], 'WAPSupp')
+    -- WAPSupp
+
+    -- DoesWeaponTakeWeaponComponent(`WEAPON_G36`,`COMPONENT_MARKOMODSG36_STOCK_01`)
+    -- GetWeaponComponentTypeModel(`COMPONENT_MARKOMODSG36_STOCK_01`)
+    print(GetWeaponComponentTypeModel(`COMPONENT_MARKOMODSG36_STOCK_01`))
+    -- print(HasWeaponGotWeaponComponent(y,hash))
+end)

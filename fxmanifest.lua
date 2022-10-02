@@ -10,9 +10,10 @@ files {
     'ui/*.html',
     'ui/assets/img/*.png',
     'ui/assets/css/*.css',
-    'ui/assets/js/*.js'
+    'ui/assets/js/*.js',
+    "data/components.json",
+    "data/backup.lua"
 }
-
 
 client_scripts {
 	'config/clientConfig.lua',
