@@ -247,178 +247,13 @@ local Weap = {
     weaponsOnBack = {
         equiped = nil,
         current = {
-            [1] = {offset = 0.12},
-            [2] = {offset = 0.06},
-            [3] = {offset = 0.00},
-            [4] = {offset = -0.06},
-            [5] = {offset = -0.12}
+            [1] = {offset = vector3(0.2 , -0.16, 0.14)},
+            [2] = {offset = vector3(0.2 , -0.16, 0.04)},
+            [3] = {offset = vector3(0.2 , -0.16, -0.08)},
+            [4] = {offset = vector3(0.2 , -0.16, -0.15)}
         },
         exists = {},
-        components = {},
-        weapons = {
-            WEAPON_MK47FM = {
-                model = "MK47FluffysMods",
-            },
-
-            WEAPON_G36 = {
-                model = "markomods-g36",
-                components = {
-                    COMPONENT_MARKOMODSG36_STOCK_01 = {
-                        bone = "AAPStock",
-                        model = "markomods-g36-stock1"
-                    },
-
-                    COMPONENT_MARKOMODSG36_BARREL_01 = {
-                        bone = "AAPSupp",
-                        model = "markomods-g36-barrel1"
-                    }
-                }
-            },
-
-            WEAPON_AKM = {
-                model = "akm",
-                components = {
-                    COMPONENT_AKM_HANDGUARD_01 = {
-                        bone = 'WAPGrip',
-                        model = 'akmhandguard1'
-                    },
-                    COMPONENT_AKM_PISTOLGRIP_01 = {
-                        bone = 'WAPGrip_2',
-                        model = 'akmpistolgrip1'
-                    },
-                    COMPONENT_AKM_STOCK_01 = {
-                        bone = 'WAPSock',
-                        model = 'akmstock1'
-                    },
-                    COMPONENT_AKM_DUSTCOVER_01 = {
-                        bone = 'WAPFlshLasr',
-                        model = 'akmdustcover1'
-                    }
-                }
-            },
-
-            WEAPON_MDR = {
-                model = "w_ar_MDR"
-            },
-
-            WEAPON_GRENADELAUNCHER_SMOKE = {
-                model = "w_lr_grenadelauncher"
-            },
-
-            WEAPON_LTL = {
-                model = "w_sg_ltl"
-            },
-
-            WEAPON_SR25 = {
-                model = "sr25"
-            },
-
-            WEAPON_50BEOWULF = {
-                model = "ar15_beowulf",
-                components = {
-                    COMPONENT_BEOWULF_BODY_01 = {
-                        bone = 'WAPGun',
-                        model = 'ar15body1'
-                    }
-                }
-            },
-
-            WEAPON_SCARSC = {
-                model = "scarsc"
-            },
-
-            WEAPON_PMXFM = {
-                model = "pmx_fluffymods"
-            },
-
-            WEAPON_SCAR17FM = {
-                model = "ScarFluffysMods",
-                components = {
-                    COMPONENT_SCAR_BODY_01 = {
-                        bone = 'WAPGun',
-                        model = 'MainBody1'
-                    },
-                    COMPONENT_SCAR_BARREL_01 = {
-                        bone = 'WAPSupp',
-                        model = 'scar_barrel3'
-                    }
-                }
-            },
-
-            WEAPON_M4A1FM = {
-                model = "M4A1_FluffysMods",
-                components = {
-                    COMPONENT_M4A1FM_BARREL_01 = {
-                        bone = 'WAPSupp',
-                        model = 'M4A1Barrel1_FluffysMods'
-                    }
-                }
-            },
-
-            WEAPON_MPX = {
-                model = "w_sb_mpx"
-            },
-
-            WEAPON_P90FM = {
-                model = "P90FluffysMods",
-                components = {
-                    COMPONENT_P90_BARREL_01 = {
-                        bone = 'WAPSupp',
-                        model = 'P90Barrel1FluffysMods'
-                    }
-                }
-            },
-
-            WEAPON_DRACO = {
-                model = "w_ar_draco"
-            },
-
-            WEAPON_SCORPIONEVO = {
-                model = "w_sb_scorpionevo"
-            },
-
-            WEAPON_ASVAL = {
-                model = "asval",
-                components = {
-                    COMPONENT_ASVAL_STOCK_01 = {
-                        bone = 'WAPGrip_2',
-                        model = 'asval_stock_01'
-                    },
-                },
-            },
-
-            WEAPON_AKS74U = {
-                model = "aks74u",
-                components = {
-                    COMPONENT_AKS74U_HANDGUARD_01 = {
-                        bone = 'WAPBarrel',
-                        model = 'aks74u_handguard_01'
-                    },
-                    COMPONENT_AKS74U_STOCK_01 = {
-                        bone = 'WAPScop_2',
-                        model = 'aks74u_stock_01'
-                    },
-                },
-            },
-
-            WEAPON_MCXSPEAR = {
-                model = "mcxspear",
-                components = {
-                    COMPONENT_MCXSPEAR_BODY_01 = {
-                        bone = 'WAPGrip_2',
-                        model = 'mcxspear_body_01'
-                    },
-                    COMPONENT_MCXSPEAR_STOCK_01 = {
-                        bone = 'WAPScop_2',
-                        model = 'mcxspear_stock_01'
-                    }
-                }
-            },
-
-            WEAPON_MP9A = {
-                model = "w_sb_MP9a"
-            }
-        }
+        components = {}
     }
 }
 
@@ -438,9 +273,6 @@ function Weap.Start()
     Weap.components = json.decode(LoadResourceFile('plouffe_weapons', "data/components.json"))
 
     if Weap.inventoryFramework == 'ox_inventory' then
-        local ox_items = exports.ox_inventory:Items()
-        local weapon_objects = {}
-
         Weap.GetWeapons = function()
             local items = {}
             local data = {}
@@ -450,40 +282,17 @@ function Weap.Start()
             end
 
             local weapons = exports.ox_inventory:Search("slots", items)
-
             for k,v in pairs(weapons) do
+
                 if #v > 0 then
                     for i=1, #v do
-                        data[i] = v[i]
+                        data[#data+1] = v[i]
                     end
                 end
             end
 
             return data
         end
-
-        local coords = GetEntityCoords(PlayerPedId())
-
-        for k,v in pairs(Weap.weaponsOnBack.weapons) do
-            if Utils:AssureModel(v.model) then
-                ---@diagnostic disable-next-line: redundant-parameter
-                weapon_objects[k] = CreateWeaponObject(k, 1, coords.x, coords.y, 0.0, false, 1.0, 0, 0, 0)
-            end
-        end
-
-        for k,v in pairs(ox_items) do
-            local component_data = v.client?.component
-            if component_data then
-                for _,hash in pairs(component_data) do
-                    for x,y in pairs(weapon_objects) do
-                        if DoesWeaponTakeWeaponComponent(joaat(x),hash) then
-
-                        end
-                    end
-                end
-            end
-        end
-
 
         AddEventHandler('ox_inventory:currentWeapon',function(data)
             if Weap.weaponsOnBack.equiped then
@@ -498,7 +307,6 @@ function Weap.Start()
         end)
 
         RegisterNetEvent('ox_inventory:updateInventory', function(changes)
-            Utils:Debug('ox_inventory:updateInventory')
             for slot,data in pairs(changes) do
                 if (data == false and (Weap.weaponsOnBack.exists[slot] or (Weap.weaponsOnBack.equiped and Weap.weaponsOnBack.equiped.slot == slot))) or (Weap.weaponsOnBack.exists[slot] and data) then
                     Weap:Clear(slot)
@@ -506,7 +314,6 @@ function Weap.Start()
                     if Weap.weaponsOnBack.equiped and Weap.weaponsOnBack.equiped.metadata.serial == data.metadata.serial then
                         Weap.weaponsOnBack.equiped = data
                     elseif not Weap.weaponsOnBack.equiped or (Weap.weaponsOnBack.equiped and Weap.weaponsOnBack.equiped.slot ~= slot) then
-                        Utils:Debug({'Creating weapon', json.encode(data, {indent = true})})
                         Weap:AddWeaponOnBack(data)
                     end
                 end
@@ -525,14 +332,18 @@ function Weap.Start()
             return weapons
         end
     elseif Weap.inventoryFramework == 'qb-core' then
+        local core = exports["qb-core"]:GetCoreObject()
+
         Weap.GetWeapons = function()
             local retval = promise.new()
 
             core.Functions.GetPlayerData(function(data)
                 local weapons = {}
                 for k,v in pairs(data.items) do
+                    v.name = v.name:upper()
                     if Weap.weaponsOnBack.weapons[v.name] then
-                        weapons[#weapons+1] = {slot = v.slot or v.name, name = v.name}
+                        weapons[#weapons+1] = v
+                        weapons[#weapons].name = v.name
                     end
                 end
 
@@ -584,8 +395,8 @@ function Weap:RegisterEvents()
         self.vehicleId = vehicleId
     end)
 
-    exports.plouffe_lib:OnCache(function(cache)
-        if not self.cache or self.cache.ped ~= cache.ped then
+    self.cache = exports.plouffe_lib:OnCache(function(cache)
+        if self.cache.ped ~= cache.ped then
             self.cache = cache
 
             if self.forceHeadshot then
@@ -603,8 +414,14 @@ function Weap:RegisterEvents()
         self.cache = cache
     end)
 
+    if GetConvar("plouffe_lib:debug", "false") == "true" then
+        SetTimeout(1000, function ()
+            self:RefreshWeapons()
+        end)
+    end
+
     AddEventHandler('onResourceStop', function(resourceName)
-        if resourceName ~= 'plouffe_weapons' then
+        if resourceName ~= 'plouffe_weapons' and resourceName ~= Weap.inventoryFramework then
             return
         end
 
@@ -975,6 +792,15 @@ function Weap.IsPedStunned(victim, culprit, weapon, baseDamage)
 
     Weap.TazerEffect()
 end
+---comment
+---@param hash number
+function Weap:GetComponentFromHas(hash)
+    for k,v in pairs(self.components) do
+        if v.name_hash == hash then
+            return v
+        end
+    end
+end
 
 ---comment
 ---@param slot? number
@@ -996,6 +822,19 @@ function Weap:Clear(slot)
 end
 
 ---comment
+---@param weaponEntity number entity id
+---@param data table Weao.component data
+---@return number componentEntityId
+function Weap:CreateComponent(weaponEntity,data)
+    local bone = GetEntityBoneIndexByName(weaponEntity, data.weaponBone or   data.bone)
+    local componentEntity = Utils:CreateProp(data.model,{x = self.cache.pedCoords.x, y = self.cache.pedCoords.y, z = self.cache.pedCoords.z - 5.0}, 0.0, true, true)
+    SetEntityCollision(componentEntity, false, false)
+    AttachEntityToEntity(componentEntity, weaponEntity, bone, 0.0 , 0.0 , 0.00, 0.0 , 0.0 , 0.0, true, true, false, false, 1, true)
+
+    return componentEntity
+end
+
+---comment
 ---@param data table
 ---@return number
 ---@return table
@@ -1010,26 +849,48 @@ function Weap:CreateWeapon(data,objectComponents)
 
     local weaponEntity = Utils:CreateProp(data.model, {x = self.cache.pedCoords.x, y = self.cache.pedCoords.y, z = self.cache.pedCoords.z - 5.0}, 0.0, true, true)
     SetEntityCollision(weaponEntity, false, false)
-    entitys[#entitys+1] = weaponEntity
+    entitys.weapon = weaponEntity
+
+    if objectComponents and #objectComponents > 0 then
+        if Weap.inventoryFramework == 'ox_inventory' then
+            for k,v in pairs(objectComponents) do
+                local hashs = v.hash
+                for _,component in pairs(hashs) do
+                    local data = self:GetComponentFromHas(component)
+                    if not data then 
+                        Utils:Debug({"Invalid weapon component", v.name:upper()})
+                        break
+                    end
+
+                    entitys[data.type or data.bone] = self:CreateComponent(weaponEntity,data)
+                end
+            end
+        elseif Weap.inventoryFramework == 'qb-core' then
+            for k,v in pairs(objectComponents) do
+                local data = self.components[v.component:upper()]
+                if not data then 
+                    Utils:Debug({"Invalid weapon component", v.component})
+                    break
+                end
+
+                entitys[data.type or data.bone] = self:CreateComponent(weaponEntity,data)
+            end
+        end
+    end
 
     if data.components then
         for k,v in pairs(data.components) do
-            local data = Weap.components[v:upper()]
+            local data = self.components[v:upper()]
             if not data then 
                 Utils:Debug({"Invalid weapon component", v:upper()})
                 break
             end
 
-            local bone = GetEntityBoneIndexByName(weaponEntity, data.bone)
-            local componentEntity = Utils:CreateProp(data.model,{x = self.cache.pedCoords.x, y = self.cache.pedCoords.y, z = self.cache.pedCoords.z - 5.0}, 0.0, true, true)
-            SetEntityCollision(componentEntity, false, false)
-            AttachEntityToEntity(componentEntity, weaponEntity, bone, 0.0 , 0.0 , 0.00, 0.0 , 0.0 , 0.0, true, true, false, false, 1, true)
-            entitys[#entitys+1] = componentEntity
+            local index = data.type or data.bone
+            if not entitys[index] then
+                entitys[index] = self:CreateComponent(weaponEntity,data)
+            end
         end
-    end
-
-    if objectComponents then
-        Utils:Debug(objectComponents)
     end
 
     return weaponEntity, entitys
@@ -1046,7 +907,7 @@ function Weap:AddWeaponOnBack(data)
 
     local slot
 
-    for i=1,5 do
+    for i=1,#self.weaponsOnBack.current do
         if not self.weaponsOnBack.current[i].slot then
             slot = i
             break
@@ -1057,13 +918,13 @@ function Weap:AddWeaponOnBack(data)
         return
     end
 
-    local weaponEntity, entitys = self:CreateWeapon(self.weaponsOnBack.weapons[data.name], data.metadata?.components)
+    local weaponEntity, entitys = self:CreateWeapon(self.weaponsOnBack.weapons[data.name], data.metadata?.components or data.info?.attachments)
 
     self.weaponsOnBack.current[slot] = {offset =  self.weaponsOnBack.current[slot].offset, slot = data.slot, entitys = entitys}
 
     self.weaponsOnBack.exists[data.slot] = slot
 
-    AttachEntityToEntity(weaponEntity, self.cache.ped, GetPedBoneIndex(self.cache.ped, 24816), 0.2 , -0.16 , self.weaponsOnBack.current[slot].offset, 0.0 , 0.0 , 0.0, true, true, true, false, 1, true)
+    AttachEntityToEntity(weaponEntity, self.cache.ped, GetPedBoneIndex(self.cache.ped, 24816), self.weaponsOnBack.current[slot].offset.x ,self.weaponsOnBack.current[slot].offset.y , self.weaponsOnBack.current[slot].offset.z, 0.0 , 0.0 , 0.0, true, true, true, false, 1, true)
 end
 
 function Weap:RefreshWeapons()
@@ -1076,26 +937,3 @@ end
 
 CreateThread(wake)
 exports.plouffe_lib:OnFrameworkLoaded(Weap.Start)
-
-RegisterCommand('test_weapon', function(source, args, raw)
-    local coords = GetEntityCoords(PlayerPedId())
-    local weapon_objects = {}
-
-    if Utils:AssureModel('W_AR_CARBINERIFLE') then
-        ---@diagnostic disable-next-line: redundant-parameter
-        weapon_objects['WEAPON_CARBINERIFLE'] = CreateWeaponObject('WEAPON_CARBINERIFLE', 1, coords.x, coords.y, coords.z, false, 1.0, 0, 0, 0)
-    end
-
-    local COMPONENT_MARKOMODSG36_STOCK_01 = {
-        bone = "AAPStock",
-        model = "markomods-g36-stock1"
-    }
-
-    GetEntityBoneIndexByName(weapon_objects['WEAPON_CARBINERIFLE'], 'WAPSupp')
-    -- WAPSupp
-
-    -- DoesWeaponTakeWeaponComponent(`WEAPON_G36`,`COMPONENT_MARKOMODSG36_STOCK_01`)
-    -- GetWeaponComponentTypeModel(`COMPONENT_MARKOMODSG36_STOCK_01`)
-    print(GetWeaponComponentTypeModel(`COMPONENT_MARKOMODSG36_STOCK_01`))
-    -- print(HasWeaponGotWeaponComponent(y,hash))
-end)

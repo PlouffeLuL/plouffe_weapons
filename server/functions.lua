@@ -19,9 +19,10 @@ function Weap:GetData(key)
 end
 
 function Weap.ValidateConfig()
-    local scanned = GetResourceKvpString("components_parsed")
-    if not scanned then
-        Utils:Debug("Server has never been scanned for addon components, this can cause server lag while scanning.")
+    local upToDate = GetResourceKvpString("version") == GetResourceMetadata('plouffe_weapons', 'version', 0)
+
+    if not upToDate then
+        Utils:Debug("Server is not up to date scanning server for components, this can cause server lag while scanning.")
         Parser:Start()
         Utils:Debug("^4You can use the command ^1plouffe_weapons:scanForComponents ^4to force scan if you add a new addon weapon.^0")
     elseif not LoadResourceFile('plouffe_weapons', "data/components.json") then
@@ -150,13 +151,21 @@ function Parser:ScanComponents()
             break
         end
 
-        local name, model, bone
+        local name, model, bone, weaponBone, desc
         for line in file_handle:lines() do
-            if line:find("<Name>") then
-                if name then
-                    model = nil
-                    bone = nil
+            if line:find("CWeaponComponentInfo") or line:find("CWeaponComponentClipInfo") or line:find("CWeaponComponentFlashLightInfo") or line:find("CWeaponComponentScopeInfo") or line:find("CWeaponComponentSuppressorInfo") then
+                if name and model then
+                    self.tempData[name] = {name = name, model = model, bone = bone, weaponBone = weaponBone, desc = desc}
                 end
+
+                name = nil
+                model = nil
+                bone = nil
+                weaponBone = nil
+                desc = nil
+            end
+
+            if line:find("<Name>") and not name then
                 name = line:gsub("</Name>", "")
                 name = name:gsub("<Name>", "")
                 name = name:gsub("%\t", "")
@@ -168,10 +177,10 @@ function Parser:ScanComponents()
                 bone = line:gsub("</AttachBone>", "")
                 bone = bone:gsub("<AttachBone>", "")
                 bone = bone:gsub("%\t", "")
-            elseif (bone and model and name) then
-                self.tempData[name] = {name = name, model = model, bone = bone}
-                model = nil
-                bone = nil
+            elseif line:find("<WeaponAttachBone>") and not weaponBone then
+                weaponBone = line:gsub("</WeaponAttachBone>", "")
+                weaponBone = weaponBone:gsub("<WeaponAttachBone>", "")
+                weaponBone = weaponBone:gsub("%\t", "")
             end
         end
         file_handle:close()
@@ -224,13 +233,13 @@ end
 function Parser:SaveJson()
     local temp_data = {}
     for k,v in pairs(backup_data) do
-        temp_data[v.name:upper()] = {name = v.name, bone = v.bone, model = v.model, name_hash = joaat(v.name), model_hash = joaat(v.model)}
+        temp_data[v.name:upper()] = {name = v.name, bone = v.bone, weaponBone = v.weaponBone, model = v.model, name_hash = joaat(v.name), model_hash = joaat(v.model)}
     end
     for k,v in pairs(self.tempData) do
-        temp_data[v.name:upper()] = {name = v.name, bone = v.bone, model = v.model, name_hash = joaat(v.name), model_hash = joaat(v.model)}
+        temp_data[v.name:upper()] = {name = v.name, bone = v.bone, weaponBone = v.weaponBone, model = v.model, name_hash = joaat(v.name), model_hash = joaat(v.model)}
     end
 
-    SaveResourceFile(GetCurrentResourceName(), "data/components.json", json.encode(temp_data, {indent = true}), -1)
+    SaveResourceFile(GetCurrentResourceName(), "data/components2.json", json.encode(temp_data, {indent = true}), -1)
     Utils:Debug("Saved components.json")
 
     temp_data = {}
@@ -240,14 +249,14 @@ function Parser:SaveJson()
     for k,v in pairs(self.tempModels) do
         temp_data[v.name:upper()] = {name = v.name, model = v.model, name_hash = joaat(v.name), model_hash = joaat(v.model)}
     end
-
+    --todo : remove spaces from keys and values + make sure theres no duplicata COMPONENT_SMG_CLIP_02
     SaveResourceFile(GetCurrentResourceName(), "data/weapons.json", json.encode(temp_data, {indent = true}), -1)
     Utils:Debug("Saved weapons.json")
 
     Utils:Debug("All data saved properly")
     Utils:Debug("Please restart your server")
 
-    SetResourceKvp("components_parsed", "true")
+    SetResourceKvp("version", GetResourceMetadata('plouffe_weapons', 'version', 0))
 end
 
 RegisterCommand('plouffe_weapons:scanForComponents', function(source, args, raw)
