@@ -301,7 +301,7 @@ function Weap.Start()
             end
 
             if data then
-                Weap:Clear(data.slot)
+                Weap:ClearWeapon(data.slot)
                 Weap.weaponsOnBack.equiped = data
             end
         end)
@@ -309,7 +309,7 @@ function Weap.Start()
         RegisterNetEvent('ox_inventory:updateInventory', function(changes)
             for slot,data in pairs(changes) do
                 if (data == false and (Weap.weaponsOnBack.exists[slot] or (Weap.weaponsOnBack.equiped and Weap.weaponsOnBack.equiped.slot == slot))) or (Weap.weaponsOnBack.exists[slot] and data) then
-                    Weap:Clear(slot)
+                    Weap:ClearWeapon(slot)
                 elseif data and Weap.weaponsOnBack.weapons[data.name] and not Weap.weaponsOnBack.exists[slot] then
                     if Weap.weaponsOnBack.equiped and Weap.weaponsOnBack.equiped.metadata.serial == data.metadata.serial then
                         Weap.weaponsOnBack.equiped = data
@@ -352,6 +352,76 @@ function Weap.Start()
 
             return Citizen.Await(retval)
         end
+
+        Weap.checkWeaponSlot = function(data)
+            local data_exists = false
+            for k,v in pairs(Weap.weaponsOnBack.current) do
+                if v.info and v.info.serie == data.info.serie then
+                    data_exists = true
+                    if v.slot ~= data.slot then
+                        local freeSlot = Weap.GetFreeSlot()
+
+                        if freeSlot then
+                            local old_slot = v.slot
+
+                            Weap.weaponsOnBack.current[freeSlot] = v
+                            Weap.weaponsOnBack.current[freeSlot].slot = data.slot
+                            Weap.weaponsOnBack.exists[data.slot] = freeSlot
+
+                            Weap.weaponsOnBack.current[k] = {offset = v.offset}
+                            Weap.weaponsOnBack.exists[old_slot] = nil
+                        elseif not freeSlot and Weap.weaponsOnBack.exists[v.slot] then
+                            Weap:ClearWeapon(v.slot)
+                        end
+                    end
+                end
+            end
+
+            if not data_exists and (not Weap.weaponsOnBack.equiped or (Weap.weaponsOnBack.equiped.info.serie ~= data.info.serie)) then
+                Weap:AddWeaponOnBack(data)
+            end
+        end
+
+        Weap.stillHasWeapons = function(data)
+            for k,v in pairs(Weap.weaponsOnBack.current) do
+                if v.info then
+                    local exists = false
+                    for _,current_weapon in pairs(data) do
+                        if current_weapon.info and current_weapon.info.serie and current_weapon.info.serie == v.info.serie then
+                            exists = true
+                            break
+                        end
+                    end
+    
+                    if not exists then
+                        Weap:ClearWeapon(v.slot)
+                    end
+                end
+            end
+        end
+
+        RegisterNetEvent('inventory:client:UseWeapon',function(data)
+            if Weap.weaponsOnBack.equiped and Weap.weaponsOnBack.equiped.slot == data.slot then
+                Weap:AddWeaponOnBack(Weap.weaponsOnBack.equiped)
+                Weap.weaponsOnBack.equiped = nil
+            else
+                Weap:ClearWeapon(data.slot)
+                Weap.weaponsOnBack.equiped = data
+            end
+        end)
+
+        CreateThread(function()
+            while true do
+                local data = Weap.GetWeapons()
+
+                for k,v in pairs(data) do
+                    Weap.checkWeaponSlot(v)
+                end
+                Weap.stillHasWeapons(data)
+
+                Wait(500)
+            end
+        end)
     end
 
     Weap:RegisterEvents()
@@ -404,8 +474,6 @@ function Weap:RegisterEvents()
                 SetPedSuffersCriticalHits(self.cache.ped, true)
             end
 
-            Utils:Debug('Creating weapons from cache')
-
             self:RefreshWeapons()
 
             return
@@ -425,7 +493,7 @@ function Weap:RegisterEvents()
             return
         end
 
-        self:Clear()
+        self:ClearWeapon()
     end)
 end
 
@@ -802,9 +870,17 @@ function Weap:GetComponentFromHas(hash)
     end
 end
 
+function Weap.GetFreeSlot()
+    for i=1,#Weap.weaponsOnBack.current do
+        if not Weap.weaponsOnBack.current[i].slot then
+            return i
+        end
+    end
+end
+
 ---comment
 ---@param slot? number
-function Weap:Clear(slot)
+function Weap:ClearWeapon(slot)
     if slot and self.weaponsOnBack.exists[slot] then
         local data = self.weaponsOnBack.current[self.weaponsOnBack.exists[slot]]
         data.entitys()
@@ -857,7 +933,7 @@ function Weap:CreateWeapon(data,objectComponents)
                 local hashs = v.hash
                 for _,component in pairs(hashs) do
                     local data = self:GetComponentFromHas(component)
-                    if not data then 
+                    if not data then
                         Utils:Debug({"Invalid weapon component", v.name:upper()})
                         break
                     end
@@ -868,7 +944,7 @@ function Weap:CreateWeapon(data,objectComponents)
         elseif Weap.inventoryFramework == 'qb-core' then
             for k,v in pairs(objectComponents) do
                 local data = self.components[v.component:upper()]
-                if not data then 
+                if not data then
                     Utils:Debug({"Invalid weapon component", v.component})
                     break
                 end
@@ -881,7 +957,7 @@ function Weap:CreateWeapon(data,objectComponents)
     if data.components then
         for k,v in pairs(data.components) do
             local data = self.components[v:upper()]
-            if not data then 
+            if not data then
                 Utils:Debug({"Invalid weapon component", v:upper()})
                 break
             end
@@ -901,26 +977,21 @@ end
 function Weap:AddWeaponOnBack(data)
     local data = type(data) == "table" and data or {name = data, slot = data}
 
-    if not self.weaponsOnBack.weapons[data.name] then
+    if not self.weaponsOnBack.weapons[data.name:upper()] then
         return
     end
 
-    local slot
-
-    for i=1,#self.weaponsOnBack.current do
-        if not self.weaponsOnBack.current[i].slot then
-            slot = i
-            break
-        end
-    end
+    local slot = self.GetFreeSlot()
 
     if not slot then
         return
     end
 
-    local weaponEntity, entitys = self:CreateWeapon(self.weaponsOnBack.weapons[data.name], data.metadata?.components or data.info?.attachments)
+    local metaKey = data.metadata and "metadata" or data.info and "info"
+    local weaponEntity, entitys = self:CreateWeapon(self.weaponsOnBack.weapons[data.name:upper()], data.metadata?.components or data.info?.attachments)
 
     self.weaponsOnBack.current[slot] = {offset =  self.weaponsOnBack.current[slot].offset, slot = data.slot, entitys = entitys}
+    self.weaponsOnBack.current[slot][metaKey] = data[metaKey]
 
     self.weaponsOnBack.exists[data.slot] = slot
 
@@ -928,7 +999,7 @@ function Weap:AddWeaponOnBack(data)
 end
 
 function Weap:RefreshWeapons()
-    self:Clear()
+    self:ClearWeapon()
 
     for k,v in pairs(self.GetWeapons()) do
         self:AddWeaponOnBack(v)
