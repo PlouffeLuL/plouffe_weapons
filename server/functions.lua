@@ -169,18 +169,22 @@ function Parser:ScanComponents()
                 name = line:gsub("</Name>", "")
                 name = name:gsub("<Name>", "")
                 name = name:gsub("%\t", "")
+                name = name:gsub("%s+", "")
             elseif line:find("<Model>") and not model then
                 model = line:gsub("</Model>", "")
                 model = model:gsub("<Model>", "")
                 model = model:gsub("%\t", "")
+                model = model:gsub("%s+", "")
             elseif line:find("<AttachBone>") and not bone then
                 bone = line:gsub("</AttachBone>", "")
                 bone = bone:gsub("<AttachBone>", "")
                 bone = bone:gsub("%\t", "")
+                bone = bone:gsub("%s+", "")
             elseif line:find("<WeaponAttachBone>") and not weaponBone then
                 weaponBone = line:gsub("</WeaponAttachBone>", "")
                 weaponBone = weaponBone:gsub("<WeaponAttachBone>", "")
                 weaponBone = weaponBone:gsub("%\t", "")
+                weaponBone = weaponBone:gsub("%s+", "")
             end
         end
         file_handle:close()
@@ -239,7 +243,7 @@ function Parser:SaveJson()
         temp_data[v.name:upper()] = {name = v.name, bone = v.bone, weaponBone = v.weaponBone, model = v.model, name_hash = joaat(v.name), model_hash = joaat(v.model)}
     end
 
-    SaveResourceFile(GetCurrentResourceName(), "data/components2.json", json.encode(temp_data, {indent = true}), -1)
+    SaveResourceFile(GetCurrentResourceName(), "data/components.json", json.encode(temp_data, {indent = true}), -1)
     Utils:Debug("Saved components.json")
 
     temp_data = {}
@@ -251,6 +255,9 @@ function Parser:SaveJson()
     end
     --todo : remove spaces from keys and values + make sure theres no duplicata COMPONENT_SMG_CLIP_02
     SaveResourceFile(GetCurrentResourceName(), "data/weapons.json", json.encode(temp_data, {indent = true}), -1)
+
+
+
     Utils:Debug("Saved weapons.json")
 
     Utils:Debug("All data saved properly")
