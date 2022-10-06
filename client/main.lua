@@ -936,15 +936,16 @@ function Weap:CreateWeapon(data,objectComponents)
     if objectComponents and #objectComponents > 0 then
         if Weap.inventoryFramework == 'ox_inventory' then
             for k,v in pairs(objectComponents) do
-                local hashs = v.hash
-                for _,component in pairs(hashs) do
-                    local data = self:GetComponentFromHas(component)
-                    if not data then
-                        Utils:Debug({"Invalid weapon component", v.name:upper()})
-                        break
+                if type(v) == "table" then
+                    local hashs = v.hash
+                    for _,component in pairs(hashs) do
+                        local data = self:GetComponentFromHas(component)
+                        if not data then
+                            Utils:Debug({"Invalid weapon component", v.name:upper()})
+                            break
+                        end
+                        entitys[data.type or data.bone] = self:CreateComponent(weaponEntity,data)
                     end
-
-                    entitys[data.type or data.bone] = self:CreateComponent(weaponEntity,data)
                 end
             end
         elseif Weap.inventoryFramework == 'qb-core' then
@@ -954,7 +955,6 @@ function Weap:CreateWeapon(data,objectComponents)
                     Utils:Debug({"Invalid weapon component", v.component})
                     break
                 end
-
                 entitys[data.type or data.bone] = self:CreateComponent(weaponEntity,data)
             end
         end
