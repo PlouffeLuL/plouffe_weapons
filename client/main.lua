@@ -1,6 +1,7 @@
 local Utils <const> = exports.plouffe_lib:Get("Utils")
 local Callback <const> = exports.plouffe_lib:Get("Callback")
 local Interface <const> = exports.plouffe_lib:Get("Interface")
+local Groups <const> = exports.plouffe_lib:Get("Groups")
 local Lang <const> = exports.plouffe_lib:Get("Lang")
 
 local PlayerPedId <const> = PlayerPedId
@@ -247,10 +248,10 @@ local Weap = {
     weaponsOnBack = {
         equiped = nil,
         current = {
-            [1] = {offset = vector3(0.2 , -0.16, 0.14)},
-            [2] = {offset = vector3(0.2 , -0.16, 0.04)},
-            [3] = {offset = vector3(0.2 , -0.16, -0.08)},
-            [4] = {offset = vector3(0.2 , -0.16, -0.15)}
+            [1] = {bone = 24816, offset = vector3(0.2 , -0.16, 0.14)},
+            [2] = {bone = 24816, offset = vector3(0.2 , -0.16, 0.04)},
+            [3] = {bone = 24816, offset = vector3(0.2 , -0.16, -0.08)},
+            [4] = {bone = 24816, offset = vector3(0.2 , -0.16, -0.15)}
         },
         exists = {},
         components = {}
@@ -265,6 +266,8 @@ local function wake()
 
     Weap.weaponsOnBack.weapons = list.onBack
     Weap.onBack = nil
+
+    exports.plouffe_lib:OnFrameworkLoaded(Weap.Start)
 end
 
 function Weap.Start()
@@ -273,6 +276,29 @@ function Weap.Start()
     Weap.components = json.decode(LoadResourceFile('plouffe_weapons', "data/components.json"))
 
     if Weap.useWeaponsOnBack then
+        for k,v in pairs(Weap.weaponsOnBack.weapons) do
+            local index = #Weap.weaponsOnBack.current+1
+            if v.position then
+                Weap.weaponsOnBack.current[index] = {
+                    name = k,
+                    groups = v.position.groups,
+                    offset = v.position.offset,
+                    rotation = v.position.rotation,
+                    bone = v.position.bone
+                }
+            end
+        end
+
+        Weap.weaponsOnBack.saved_current = Utils.TableClone(Weap.weaponsOnBack.current)
+
+        for k,v in pairs(Weap.weaponsOnBack.saved_current) do
+            v = setmetatable(v,{
+                __newindex = function (self,key,value)
+                    Utils:Debug({"Trying to set a new value to ", k, "key", key, "value", value})
+                end
+            })
+        end
+
         if Weap.inventoryFramework == 'ox_inventory' then
             Weap.GetWeapons = function()
                 local items = {}
@@ -309,8 +335,11 @@ function Weap.Start()
 
             RegisterNetEvent('ox_inventory:updateInventory', function(changes)
                 for slot,data in pairs(changes) do
-                    if (data == false and (Weap.weaponsOnBack.exists[slot] or (Weap.weaponsOnBack.equiped and Weap.weaponsOnBack.equiped.slot == slot))) or (Weap.weaponsOnBack.exists[slot] and data) then
+                    if (data == false and (Weap.weaponsOnBack.exists[slot] or (Weap.weaponsOnBack.equiped and Weap.weaponsOnBack.equiped.slot == slot))) then
                         Weap:ClearWeapon(slot)
+                    elseif (Weap.weaponsOnBack.exists[slot] and data) then
+                        Weap:ClearWeapon(slot)
+                        Weap:AddWeaponOnBack(data)
                     elseif data and Weap.weaponsOnBack.weapons[data.name] and not Weap.weaponsOnBack.exists[slot] then
                         if Weap.weaponsOnBack.equiped and Weap.weaponsOnBack.equiped.metadata.serial == data.metadata.serial then
                             Weap.weaponsOnBack.equiped = data
@@ -360,7 +389,7 @@ function Weap.Start()
                     if v.info and v.info.serie == data.info.serie then
                         data_exists = true
                         if v.slot ~= data.slot then
-                            local freeSlot = Weap.GetFreeSlot()
+                            local freeSlot = Weap.GetFreeSlot(data.name)
 
                             if freeSlot then
                                 local old_slot = v.slot
@@ -369,7 +398,7 @@ function Weap.Start()
                                 Weap.weaponsOnBack.current[freeSlot].slot = data.slot
                                 Weap.weaponsOnBack.exists[data.slot] = freeSlot
 
-                                Weap.weaponsOnBack.current[k] = {offset = v.offset}
+                                Weap.weaponsOnBack.current[k] = Utils.TableClone(Weap.weaponsOnBack.saved_current[k])
                                 Weap.weaponsOnBack.exists[old_slot] = nil
                             elseif not freeSlot and Weap.weaponsOnBack.exists[v.slot] then
                                 Weap:ClearWeapon(v.slot)
@@ -876,12 +905,31 @@ function Weap:GetComponentFromHas(hash)
     end
 end
 
-function Weap.GetFreeSlot()
-    for i=1,#Weap.weaponsOnBack.current do
-        if not Weap.weaponsOnBack.current[i].slot then
-            return i
+---comment
+---@return integer slotId
+---@return boolean? isCustom
+function Weap.GetFreeSlot(name)
+    local freeSlot
+    for i=#Weap.weaponsOnBack.current,1,-1 do
+        local this = Weap.weaponsOnBack.current[i]
+        if not this.slot then
+            if this.name and this.name == name then
+                if this.groups then
+                    for k,v in pairs(this.groups) do
+                        if Groups.HasGroup(nil,v) then
+                            return i, true
+                        end
+                    end
+                else
+                    return i, true
+                end
+            elseif not this.name then
+                freeSlot = i
+            end
         end
     end
+
+    return freeSlot
 end
 
 ---comment
@@ -890,14 +938,14 @@ function Weap:ClearWeapon(slot)
     if slot and self.weaponsOnBack.exists[slot] then
         local data = self.weaponsOnBack.current[self.weaponsOnBack.exists[slot]]
         data.entitys()
-        self.weaponsOnBack.current[self.weaponsOnBack.exists[slot]] = {offset = data.offset}
+        self.weaponsOnBack.current[self.weaponsOnBack.exists[slot]] = Utils.TableClone(self.weaponsOnBack.saved_current[self.weaponsOnBack.exists[slot]])
         self.weaponsOnBack.exists[slot] = nil
     elseif not slot then
         for k,v in pairs(self.weaponsOnBack.current) do
             if v.entitys then
                 v.entitys()
                 self.weaponsOnBack.exists[v.slot] = nil
-                self.weaponsOnBack.current[k] = {offset = v.offset}
+                self.weaponsOnBack.current[k] = Utils.TableClone(self.weaponsOnBack.saved_current[k])
             end
         end
     end
@@ -922,6 +970,9 @@ end
 ---@return table
 function Weap:CreateWeapon(data,objectComponents)
     local entitys = setmetatable({}, {
+        __index = {
+
+        },
         __call = function(self)
             for k,v in pairs(self) do
                 DeleteEntity(v)
@@ -982,26 +1033,31 @@ end
 ---@param data table
 function Weap:AddWeaponOnBack(data)
     local data = type(data) == "table" and data or {name = data, slot = data}
+    local weapon_data = self.weaponsOnBack.weapons[data.name:upper()]
 
-    if not self.weaponsOnBack.weapons[data.name:upper()] then
+    if not weapon_data then
         return
     end
 
-    local slot = self.GetFreeSlot()
+    local slot, isCustom = self.GetFreeSlot(data.name)
 
     if not slot then
         return
     end
 
     local metaKey = data.metadata and "metadata" or data.info and "info"
-    local weaponEntity, entitys = self:CreateWeapon(self.weaponsOnBack.weapons[data.name:upper()], data.metadata?.components or data.info?.attachments)
+    local weaponEntity, entitys = self:CreateWeapon(weapon_data, data.metadata?.components or data.info?.attachments)
 
-    self.weaponsOnBack.current[slot] = {offset =  self.weaponsOnBack.current[slot].offset, slot = data.slot, entitys = entitys}
+    self.weaponsOnBack.current[slot].slot = data.slot
+    self.weaponsOnBack.current[slot].entitys = entitys
     self.weaponsOnBack.current[slot][metaKey] = data[metaKey]
 
     self.weaponsOnBack.exists[data.slot] = slot
 
-    AttachEntityToEntity(weaponEntity, self.cache.ped, GetPedBoneIndex(self.cache.ped, 24816), self.weaponsOnBack.current[slot].offset.x ,self.weaponsOnBack.current[slot].offset.y , self.weaponsOnBack.current[slot].offset.z, 0.0 , 0.0 , 0.0, true, true, true, false, 1, true)
+    local slotData = self.weaponsOnBack.current[slot]
+    local rot = (isCustom and weapon_data.position?.rotation) or weapon_data.rotation or slotData.rotation or {x = 0.0, y = 0.0, z = 0.0}
+
+    AttachEntityToEntity(weaponEntity, self.cache.ped, GetPedBoneIndex(self.cache.ped, slotData.bone), slotData.offset.x, slotData.offset.y, slotData.offset.z, rot.x ,rot.y , rot.z, true, true, true, false, 1, true)
 end
 
 function Weap:RefreshWeapons()
@@ -1013,4 +1069,3 @@ function Weap:RefreshWeapons()
 end
 
 CreateThread(wake)
-exports.plouffe_lib:OnFrameworkLoaded(Weap.Start)

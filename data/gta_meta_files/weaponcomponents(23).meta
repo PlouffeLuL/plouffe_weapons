@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<CWeaponComponentInfoBlob>
+  <Infos>
+    <Item type="CWeaponComponentClipInfo">
+      <Name>COMPONENT_TACTICALRIFLE_CLIP_01</Name>
+      <Model>w_ar_carbinerifle_mag1</Model>
+      <LocName>WCT_CLIP1</LocName>
+      <LocDesc>WCD_CR_CLIP1</LocDesc>
+      <AttachBone>AAPClip</AttachBone>
+      <AccuracyModifier type="NULL" />
+      <DamageModifier type="NULL" />
+      <bShownOnWheel value="false" />
+      <CreateObject value="true" />
+      <HudDamage value="0" />
+      <HudSpeed value="0" />
+      <HudCapacity value="0" />
+      <HudAccuracy value="0" />
+      <HudRange value="0" />
+      <ClipSize value="30" />
+      <ReloadData ref="RELOAD_DEFAULT" />
+    </Item>
+    <Item type="CWeaponComponentClipInfo">
+      <Name>COMPONENT_TACTICALRIFLE_CLIP_02</Name>
+      <Model>w_ar_carbinerifle_mag2</Model>
+      <LocName>WCT_CLIP2</LocName>
+      <LocDesc>WCD_CR_CLIP2</LocDesc>
+      <AttachBone>AAPClip</AttachBone>
+      <AccuracyModifier type="NULL" />
+      <DamageModifier type="NULL" />
+      <bShownOnWheel value="true" />
+      <CreateObject value="true" />
+      <HudDamage value="0" />
+      <HudSpeed value="0" />
+      <HudCapacity value="100" />
+      <HudAccuracy value="0" />
+      <HudRange value="0" />
+      <ClipSize value="60" />
+      <ReloadData ref="RELOAD_DEFAULT" />
+    </Item>
+    <Item type="CWeaponComponentClipInfo">
+      <Name>COMPONENT_PRECISIONRIFLE_CLIP_01</Name>
+      <Model>w_sr_w_sr_precisionrifle_reh_mag1</Model>
+      <LocName>WCT_CLIP1</LocName>
+      <LocDesc>WCD_CR_CLIP1</LocDesc>
+      <AttachBone>AAPClip</AttachBone>
+      <AccuracyModifier type="NULL" />
+      <DamageModifier type="NULL" />
+      <bShownOnWheel value="false" />
+      <CreateObject value="true" />
+      <HudDamage value="0" />
+      <HudSpeed value="0" />
+      <HudCapacity value="0" />
+      <HudAccuracy value="0" />
+      <HudRange value="0" />
+      <ClipSize value="10" />
+      <ReloadData ref="RELOAD_DEFAULT" />
+    </Item>
+  <Item type="CWeaponComponentFlashLightInfo">
+      <Name>COMPONENT_AT_AR_FLSH_REH</Name>
+      <Model>W_AT_AR_Flsh_REH</Model>
+      <LocName>WCT_FLASH</LocName>
+      <LocDesc>WCD_FLASH</LocDesc>
+      <AttachBone>AAPFlsh</AttachBone>
+      <AccuracyModifier type="NULL" />
+      <DamageModifier type="NULL" />
+      <bShownOnWheel value="true" />
+      <CreateObject value="true" />
+      <HudDamage value="0" />
+      <HudSpeed value="0" />
+      <HudCapacity value="0" />
+      <HudAccuracy value="0" />
+      <HudRange value="0" />
+      <MainLightIntensity value="6.000000" />
+      <MainLightColor value="0x00FFFFFF" />
+      <MainLightRange value="20.000000" />
+      <MainLightFalloffExponent value="32.000000" />
+      <MainLightInnerAngle value="0.000000" />
+      <MainLightOuterAngle value="20.000000" />
+      <MainLightCoronaIntensity value="3.000000" />
+      <MainLightCoronaSize value="0.200000" />
+      <MainLightVolumeIntensity value="0.120000" />
+      <MainLightVolumeSize value="0.030000" />
+      <MainLightVolumeExponent value="0.010000" />
+      <MainLightVolumeOuterColor value="0x00FFFFFF" />
+      <MainLightShadowFadeDistance value="15.000000" />
+      <MainLightSpecularFadeDistance value="15.000000" />
+      <SecondaryLightIntensity value="4.000000" />
+      <SecondaryLightColor value="0x00FFFFFF" />
+      <SecondaryLightRange value="6.000000" />
+      <SecondaryLightFalloffExponent value="64.000000" />
+      <SecondaryLightInnerAngle value="0.000000" />
+      <SecondaryLightOuterAngle value="60.000000" />
+      <SecondaryLightVolumeIntensity value="0.300000" />
+      <SecondaryLightVolumeSize value="0.400000" />
+      <SecondaryLightVolumeExponent value="24.000000" />
+      <SecondaryLightVolumeOuterColor value="0x00FFFFFF" />
+      <SecondaryLightFadeDistance value="10.000000" />
+      <fTargetDistalongAimCamera value="8.000000" />
+      <FlashLightBone>Gun_FLMuzzle</FlashLightBone>
+      <FlashLightBoneBulbOn>Bulb_On</FlashLightBoneBulbOn>
+      <FlashLightBoneBulbOff>Bulb_Off</FlashLightBoneBulbOff>
+    </Item>
+  </Infos>
+  <InfoBlobName>DLC - mpSum2</InfoBlobName>
+</CWeaponComponentInfoBlob>

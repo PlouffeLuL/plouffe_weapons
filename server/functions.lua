@@ -36,7 +36,11 @@ function Weap.ValidateConfig()
     local weapons_data = json.decode(LoadResourceFile('plouffe_weapons', "data/weapons.json"))
 
     for k,v in pairs(Weap.onBack) do
-        v.model = weapons_data[k].model
+        if not weapons_data[k] then
+            Utils:Debug{"Missing weapon data in json file for", k}
+        else
+            v.model = weapons_data[k].model
+        end
     end
 
     ready = true
@@ -253,10 +257,8 @@ function Parser:SaveJson()
     for k,v in pairs(self.tempModels) do
         temp_data[v.name:upper()] = {name = v.name, model = v.model, name_hash = joaat(v.name), model_hash = joaat(v.model)}
     end
-    --todo : remove spaces from keys and values + make sure theres no duplicata COMPONENT_SMG_CLIP_02
+
     SaveResourceFile(GetCurrentResourceName(), "data/weapons.json", json.encode(temp_data, {indent = true}), -1)
-
-
 
     Utils:Debug("Saved weapons.json")
 
