@@ -291,14 +291,6 @@ function Weap.Start()
 
         Weap.weaponsOnBack.saved_current = Utils.TableClone(Weap.weaponsOnBack.current)
 
-        for k,v in pairs(Weap.weaponsOnBack.saved_current) do
-            v = setmetatable(v,{
-                __newindex = function (self,key,value)
-                    Utils:Debug({"Trying to set a new value to ", k, "key", key, "value", value})
-                end
-            })
-        end
-
         if Weap.inventoryFramework == 'ox_inventory' then
             Weap.GetWeapons = function()
                 local items = {}
