@@ -167,11 +167,23 @@ local pickupList = {
 
 local gsrThread = false
 local warnActive = false
-
 local Weap = {
     tazerAmmo = 1,
     tazerModel = `weapon_stungun`,
-    TazerEffect = setmetatable({
+    weaponsOnBack = {
+        equiped = nil,
+        current = {
+            [1] = {bone = 24816, offset = vector3(0.2 , -0.16, 0.14)},
+            [2] = {bone = 24816, offset = vector3(0.2 , -0.16, 0.04)},
+            [3] = {bone = 24816, offset = vector3(0.2 , -0.16, -0.08)},
+            [4] = {bone = 24816, offset = vector3(0.2 , -0.16, -0.15)}
+        },
+        exists = {},
+        components = {}
+    }
+}
+
+Weap.TazerEffect = setmetatable({
         effectStrength = 0.0,
         shakeStrength = 0.0,
         timeEffect = 1000,
@@ -244,19 +256,8 @@ local Weap = {
                 self.threadActive = false
             end)
         end
-    }),
-    weaponsOnBack = {
-        equiped = nil,
-        current = {
-            [1] = {bone = 24816, offset = vector3(0.2 , -0.16, 0.14)},
-            [2] = {bone = 24816, offset = vector3(0.2 , -0.16, 0.04)},
-            [3] = {bone = 24816, offset = vector3(0.2 , -0.16, -0.08)},
-            [4] = {bone = 24816, offset = vector3(0.2 , -0.16, -0.15)}
-        },
-        exists = {},
-        components = {}
-    }
-}
+})
+
 
 local function wake()
     local list = Callback:Sync("plouffe_weapons:loadPlayer")
