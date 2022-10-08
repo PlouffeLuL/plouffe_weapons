@@ -215,3 +215,9 @@ Weap.onBack = {
         }
     }
 }
+
+Weap.AmmoClips = {
+    test_item = {
+        [`WEAPON_MK47FM`] = true
+    }
+}

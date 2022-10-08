@@ -1083,4 +1083,57 @@ function Weap:RefreshWeapons()
     end
 end
 
+function Weap:GetClipItem()
+    for k,v in pairs(self.AmmoClips) do
+        if v[self.weapon] and Utils:GetItemCount(k) > 0 then
+            return k
+        end
+    end
+end
+
+--- [WIP] currently as it seems you cant set metadata on current equiped weapon with ox_inventory
+--- The inventory will reset ammo to 0 when you shoot so holstering your weapon will make you lose the ammo if you didnt holstered the weapon before shooting
+---@param item table|string
+---@param data? table 
+function Weap.Reload(item,data)
+    if not Weap.weapon then
+        return 
+    end
+
+    item = type(item) == "table" and item.name or Weap:GetClipItem()
+
+    if not item then
+        return
+    end
+
+    local isClip = Weap.AmmoClips[item] and Weap.AmmoClips[item][Weap.weapon]
+
+    if not isClip then
+        return
+    end
+
+    local maxInClip = GetMaxAmmoInClip(Weap.cache.ped, Weap.weapon)
+    local currentAmmo = GetAmmoInClip(Weap.cache.ped, Weap.weapon)
+
+    if currentAmmo >= maxInClip then
+        return
+    end
+
+    SetPedAmmo(Weap.cache.ped, Weap.weapon, maxInClip)
+
+    if not Weap.inVehicle then
+        MakePedReload(Weap.cache.ped)
+    else
+        RefillAmmoInstantly(Weap.cache.ped)
+    end
+
+    TriggerServerEvent('plouffe_weapons:reload', item, maxInClip, Weap.auth)
+end
+exports("Reload", Weap.Reload)
+
+RegisterCommand('reloadClip', Weap.Reload)
+RegisterKeyMapping('reloadClip', 'reload', 'keyboard', 'r')
+
 CreateThread(wake)
+
+

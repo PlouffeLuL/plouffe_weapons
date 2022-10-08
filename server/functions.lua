@@ -43,8 +43,29 @@ function Weap.ValidateConfig()
         end
     end
 
+    Weap.removeDrops = GetConvar("plouffe_weapons:removeDrops", "") == "true"
+    Weap.forceHeadshot = GetConvar("plouffe_weapons:forceHeadshot", "") == "true"
+    Weap.customCrosshair = GetConvar("plouffe_weapons:customCrosshair", "") == "true"
+    Weap.tazerEffects = GetConvar("plouffe_weapons:tazerEffects", "") == "true"
+    Weap.useWeaponsOnBack = GetConvar("plouffe_weapons:useWeaponsOnBack", "") == "true"
+
     ready = true
 end
+
+function Weap.Reload(item, maxInClip, auth)
+    local playerId = source
+
+    if not Auth:Validate(playerId,auth) then
+        return
+    end
+
+    local playerInventory = exports.ox_inventory:Inventory(playerId)
+    playerInventory.items[playerInventory.weapon].metadata.ammo = maxInClip
+
+    exports.ox_inventory:SetMetadata(playerId, playerInventory.weapon, playerInventory.items[playerInventory.weapon].metadata)
+    exports.ox_inventory:RemoveItem(playerId, item, 1)
+end
+RegisterNetEvent("plouffe_weapons:reload", Weap.Reload)
 
 Callback:RegisterServerCallback("plouffe_weapons:loadPlayer", function(playerId, cb)
     local registred, key = Auth:Register(playerId)
