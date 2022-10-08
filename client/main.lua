@@ -472,8 +472,9 @@ function Weap.Start()
 
     Weap:RegisterEvents()
 
-    RegisterCommand("+gsr_wash", function()Weap.WashGsr(true)end)
+    RegisterCommand("+gsr_wash", function()Weap.WashGsr(nil,true)end)
     RegisterCommand("-gsr_wash", function() end)
+    TriggerEvent('chat:removeSuggestion', '/gsr_wash')
     RegisterKeyMapping('+gsr_wash', Lang.clean_gsr, 'keyboard', 'E')
 
     if Player(GetPlayerServerId(PlayerId())).state.gsr then
@@ -600,7 +601,7 @@ function Weap:IsArmed()
             local shooting = IsPedShooting(self.cache.ped)
             local time = GetGameTimer()
 
-            if isTazer and self.tazerAmmo < 1 then
+            if isTazer and self.tazerAmmo < 1 and self.tazer_ammo_items then
                 DisablePlayerFiring(self.cache.Ped, true)
             end
 
@@ -616,7 +617,7 @@ function Weap:IsArmed()
                     end)
                 end
 
-                if not self.noGsr[self.weapon] and not Player(self.cache.serverId).state.gsr then
+                if self.useGsr and not self.noGsr[self.weapon] and not Player(self.cache.serverId).state.gsr then
                     Player(self.cache.serverId).state:set("gsr", true, true)
                     CreateThread(self.GsrThread)
                 end
@@ -667,9 +668,14 @@ function Weap:IsArmed()
 end
 
 ---comment
----@param ammo number
-function Weap.ReloadTazer(ammo)
-    ammo = tonumber(ammo) or 1
+---@param item string|table
+function Weap.ReloadTazer(item)
+    item = type(item) == "table" and item.name or item
+    if not Weap.tazer_ammo_items[item] then
+        return
+    end
+
+    local ammo = tonumber(Weap.tazer_ammo_items[item]) or 1
 
     if Weap.weapon ~= Weap.tazerModel or Weap.tazerAmmo > 0 then
         return
@@ -687,14 +693,18 @@ function Weap.ReloadTazer(ammo)
 
     Weap.tazerAmmo += ammo
 
-    TriggerServerEvent("plouffe_weapons:removeItem", Weap.tazerClip_item, 1)
+    TriggerServerEvent("plouffe_weapons:removeItem", item, Weap.auth)
 end
 exports("ReloadTazer", Weap.ReloadTazer)
 
 ---comment
----@param inWater boolean
-function Weap.WashGsr(inWater)
+---@param item? table
+---@param inWater? boolean
+function Weap.WashGsr(item,inWater)
+    inWater = type(inWater) == "boolean" and inWater == true
     if (inWater and not IsEntityInWater(Weap.cache.ped)) then
+        return
+    elseif not inWater and ((item and not Weap.clean_gsr_items[item.name]) or not item) then
         return
     elseif not Player(Weap.cache.serverId).state.gsr then
         return Interface.Notifications.Show({
@@ -724,6 +734,10 @@ function Weap.WashGsr(inWater)
     end
 
     Player(Weap.cache.serverId).state:set("gsr", false, true)
+
+    if item and inWater then
+        TriggerServerEvent("plouffe_weapons:removeItem", item.name, Weap.auth)
+    end
 end
 exports("WashGsr", Weap.WashGsr)
 
@@ -781,7 +795,7 @@ end
 exports("GsrTest", Weap.GsrTest)
 
 function Weap.GsrThread()
-    if gsrThread then
+    if gsrThread or not Weap.useGsr then
         return
     end
 
@@ -1096,6 +1110,7 @@ end
 ---@param item table|string
 ---@param data? table 
 function Weap.Reload(item,data)
+    -- print(LocalPlayer.state.invBusy)
     if not Weap.weapon then
         return 
     end
@@ -1131,9 +1146,7 @@ function Weap.Reload(item,data)
 end
 exports("Reload", Weap.Reload)
 
-RegisterCommand('reloadClip', Weap.Reload)
-RegisterKeyMapping('reloadClip', 'reload', 'keyboard', 'r')
+-- RegisterCommand('reloadClip', Weap.Reload)
+-- RegisterKeyMapping('reloadClip', 'reload', 'keyboard', 'r')
 
 CreateThread(wake)
-
-

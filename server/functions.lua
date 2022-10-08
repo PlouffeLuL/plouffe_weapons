@@ -1,6 +1,7 @@
 local Auth <const> = exports.plouffe_lib:Get("Auth")
 local Callback <const> = exports.plouffe_lib:Get("Callback")
 local Utils <const> = exports.plouffe_lib:Get("Utils")
+local Inventory <const> = exports.plouffe_lib:Get("Inventory")
 
 local Parser = {meta_path = {components = {}, weapons = {}}, tempData = {}, tempModels = {}}
 
@@ -48,6 +49,30 @@ function Weap.ValidateConfig()
     Weap.customCrosshair = GetConvar("plouffe_weapons:customCrosshair", "") == "true"
     Weap.tazerEffects = GetConvar("plouffe_weapons:tazerEffects", "") == "true"
     Weap.useWeaponsOnBack = GetConvar("plouffe_weapons:useWeaponsOnBack", "") == "true"
+    Weap.antiAimBoost = GetConvar("plouffe_weapons:antiAimBoost", "") == "true"
+    Weap.useGsr = GetConvar("plouffe_weapons:gsr", "") == "true"
+
+    local data = json.decode(GetConvar("plouffe_weapons:clean_gsr_items", ""))
+    if data and type(data) == "table" then
+        Weap.clean_gsr_items = {}
+
+        for k,v in pairs(data) do
+            local one, two = v:find(":")
+            Weap.clean_gsr_items[v] = true
+        end
+        data = nil
+    end
+
+    data = json.decode(GetConvar("plouffe_weapons:tazer_ammo_items", ""))
+    if data and type(data) == "table" then
+        Weap.tazer_ammo_items = {}
+
+        for k,v in pairs(data) do
+            local one, two = v:find(":")
+            Weap.tazer_ammo_items[v:sub(0,one - 1)] = tonumber(v:sub(one + 1,v:len()))
+        end
+        data = nil
+    end
 
     ready = true
 end
@@ -66,6 +91,17 @@ function Weap.Reload(item, maxInClip, auth)
     exports.ox_inventory:RemoveItem(playerId, item, 1)
 end
 RegisterNetEvent("plouffe_weapons:reload", Weap.Reload)
+
+function Weap.RemoveItem(item, auth)
+    local playerId = source
+
+    if not Auth:Validate(playerId,auth) then
+        return
+    end
+
+    Inventory.RemoveItem(playerId, item, 1)
+end
+RegisterNetEvent("plouffe_weapons:removeItem", Weap.RemoveItem)
 
 Callback:RegisterServerCallback("plouffe_weapons:loadPlayer", function(playerId, cb)
     local registred, key = Auth:Register(playerId)

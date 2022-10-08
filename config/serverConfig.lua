@@ -1,10 +1,4 @@
-Weap = {
-    removeDrops = true,
-    forceHeadshot = true,
-    customCrosshair = true,
-    tazerEffects = true,
-    useWeaponsOnBack = true
-}
+Weap = {}
 
 Weap.noGsr = {
     WEAPON_STUNGUN = true,
