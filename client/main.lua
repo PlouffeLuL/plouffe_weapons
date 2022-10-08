@@ -342,10 +342,10 @@ function Weap.Start()
                 end
             end)
         elseif Weap.inventoryFramework == 'es_extended' then
+            local core = exports.es_extended:getSharedObject()
             Weap.GetWeapons = function()
                 local weapons = {}
-
-                for k,v in pairs(Utils.GetPlayerData().Inventory) do
+                for k,v in pairs(core.GetPlayerData().inventory) do
                     if Weap.weaponsOnBack.weapons[v.name] then
                         weapons[#weapons+1] = {slot = v.slot or v.name, name = v.name}
                     end
@@ -353,6 +353,29 @@ function Weap.Start()
 
                 return weapons
             end
+
+            local hash_list = {}
+            for k,v in pairs(Weap.weaponsOnBack.weapons) do
+                hash_list[joaat(k)] = k
+            end
+
+            CreateThread(function()
+                while true do
+                    for k,v in pairs(hash_list) do
+                        local hasWeapon = HasPedGotWeapon(Weap.cache.ped, k, false)
+                        local holdingWeapon = Weap.weapon and Weap.weapon == k
+
+                        if hasWeapon and not Weap.weaponsOnBack.exists[v] and not holdingWeapon then
+                            Weap:AddWeaponOnBack(v)
+                        elseif (not hasWeapon or holdingWeapon) and Weap.weaponsOnBack.exists[v] then
+                            Weap:ClearWeapon(v)
+                        end
+                    end
+                    Wait(500)
+                end
+            end)
+
+            -- HasPedGotWeapon
         elseif Weap.inventoryFramework == 'qb-core' then
             local core = exports["qb-core"]:GetCoreObject()
 
@@ -1024,7 +1047,7 @@ end
 ---comment
 ---@param data table
 function Weap:AddWeaponOnBack(data)
-    local data = type(data) == "table" and data or {name = data, slot = data}
+    local data = type(data) == "table" and data or {name = data, slot = data, metadata = ""}
     local weapon_data = self.weaponsOnBack.weapons[data.name:upper()]
 
     if not weapon_data then
