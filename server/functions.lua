@@ -23,14 +23,14 @@ function Weap.ValidateConfig()
     local upToDate = GetResourceKvpString("version") == GetResourceMetadata('plouffe_weapons', 'version', 0)
 
     if not upToDate then
-        Utils:Debug("Server is not up to date scanning server for components, this can cause server lag while scanning.")
+        Utils.Debug("Server is not up to date scanning server for components, this can cause server lag while scanning.")
         Parser:Start()
-        Utils:Debug("^4You can use the command ^1plouffe_weapons:scanForComponents ^4to force scan if you add a new addon weapon.^0")
+        Utils.Debug("^4You can use the command ^1plouffe_weapons:scanForComponents ^4to force scan if you add a new addon weapon.^0")
     elseif not LoadResourceFile('plouffe_weapons', "data/components.json") then
-        Utils:Debug("^1Unable to load components.json file, recreating the file.^0")
+        Utils.Debug("^1Unable to load components.json file, recreating the file.^0")
         Parser:Start()
     elseif not LoadResourceFile('plouffe_weapons', "data/weapons.json") then
-        Utils:Debug("^1Unable to load weapons.json file, recreating the file.^0")
+        Utils.Debug("^1Unable to load weapons.json file, recreating the file.^0")
         Parser:Start()
     end
 
@@ -38,7 +38,7 @@ function Weap.ValidateConfig()
 
     for k,v in pairs(Weap.onBack) do
         if not weapons_data[k] then
-            Utils:Debug{"Missing weapon data in json file for", k}
+            Utils.Debug{"Missing weapon data in json file for", k}
         else
             v.model = weapons_data[k].model
         end
@@ -80,7 +80,7 @@ end
 function Weap.Reload(item, maxInClip, auth)
     local playerId = source
 
-    if not Auth:Validate(playerId,auth) then
+    if not Auth.Validate(playerId,auth) then
         return
     end
 
@@ -95,7 +95,7 @@ RegisterNetEvent("plouffe_weapons:reload", Weap.Reload)
 function Weap.RemoveItem(item, auth)
     local playerId = source
 
-    if not Auth:Validate(playerId,auth) then
+    if not Auth.Validate(playerId,auth) then
         return
     end
 
@@ -103,8 +103,8 @@ function Weap.RemoveItem(item, auth)
 end
 RegisterNetEvent("plouffe_weapons:removeItem", Weap.RemoveItem)
 
-Callback:RegisterServerCallback("plouffe_weapons:loadPlayer", function(playerId, cb)
-    local registred, key = Auth:Register(playerId)
+Callback.Register("plouffe_weapons:loadPlayer", function(playerId, cb)
+    local registred, key = Auth.Register(playerId)
 
     if not registred then
         return DropPlayer(" "), cb()
@@ -114,7 +114,7 @@ Callback:RegisterServerCallback("plouffe_weapons:loadPlayer", function(playerId,
         Wait(1000)
     end
 
-    cb(Weap:GetData(key))
+    return Weap:GetData(key)
 end)
 
 CreateThread(Weap.ValidateConfig)
@@ -142,12 +142,12 @@ function Parser:Start()
                         end
                         for line in file_handle:lines() do
                             if line:find("WEAPON_COMPONENTS_FILE") or line:find("WEAPONCOMPONENTSINFO_FILE") then
-                                Utils:Debug({"Addon component found at resource", resourceName})
+                                Utils.Debug({"Addon component found at resource", resourceName})
                                 self:ScanFolder(dir_path, self:ParseLine(line), "components")
                             end
 
                             if line:find("WEAPONINFO_FILE") then
-                                Utils:Debug({"Addon weapon found at resource", resourceName})
+                                Utils.Debug({"Addon weapon found at resource", resourceName})
                                 self:ScanFolder(dir_path, self:ParseLine(line), "weapons")
                             end
                         end
@@ -195,7 +195,7 @@ function Parser:ScanFolder(path, fileName, key)
         for file in dir:lines() do    
             if file == fileName then
                 self.meta_path[key][#self.meta_path[key]+1] = ("%s/%s"):format(path, file)
-                Utils:Debug({"Found", fileName, "in", ("%s/%s"):format(path, file)})
+                Utils.Debug({"Found", fileName, "in", ("%s/%s"):format(path, file)})
             end
 
             self:ScanFolder(("%s/%s"):format(path,file), fileName, key)
@@ -206,7 +206,7 @@ end
 
 function Parser:ScanComponents()
     for k,v in pairs(self.meta_path.components) do
-        Utils:Debug({"Scanning", v})
+        Utils.Debug({"Scanning", v})
         local file_handle = io.input(v)
         if not file_handle then
             break
@@ -254,7 +254,7 @@ end
 
 function Parser:ScanWeapons()
     for k,v in pairs(self.meta_path.weapons) do
-        Utils:Debug({"Scanning", v})
+        Utils.Debug({"Scanning", v})
         local file_handle = io.input(v)
         if not file_handle then
             break
@@ -305,7 +305,7 @@ function Parser:SaveJson()
     end
 
     SaveResourceFile(GetCurrentResourceName(), "data/components.json", json.encode(temp_data, {indent = true}), -1)
-    Utils:Debug("Saved components.json")
+    Utils.Debug("Saved components.json")
 
     temp_data = {}
     for k,v in pairs(backup_weapons) do
@@ -317,10 +317,10 @@ function Parser:SaveJson()
 
     SaveResourceFile(GetCurrentResourceName(), "data/weapons.json", json.encode(temp_data, {indent = true}), -1)
 
-    Utils:Debug("Saved weapons.json")
+    Utils.Debug("Saved weapons.json")
 
-    Utils:Debug("All data saved properly")
-    Utils:Debug("Please restart your server")
+    Utils.Debug("All data saved properly")
+    Utils.Debug("Please restart your server")
 
     SetResourceKvp("version", GetResourceMetadata('plouffe_weapons', 'version', 0))
 end

@@ -260,7 +260,7 @@ Weap.TazerEffect = setmetatable({
 
 
 local function wake()
-    local list = Callback:Sync("plouffe_weapons:loadPlayer")
+    local list = Callback.Sync("plouffe_weapons:loadPlayer")
     for k,v in pairs(list) do
         Weap[k] = v
     end
@@ -747,7 +747,7 @@ function Weap.GsrTest()
         return
     end
 
-    local target, distance = Utils:GetClosestPlayer()
+    local target, distance = Utils.GetClosestPlayer()
     local target_id = GetPlayerServerId(target)
 
     if target ~= -1 and distance <= 2.0 then
@@ -987,7 +987,7 @@ end
 ---@return number componentEntityId
 function Weap:CreateComponent(weaponEntity,data)
     local bone = GetEntityBoneIndexByName(weaponEntity, data.weaponBone or   data.bone)
-    local componentEntity = Utils:CreateProp(data.model,{x = self.cache.pedCoords.x, y = self.cache.pedCoords.y, z = self.cache.pedCoords.z - 5.0}, 0.0, true, true)
+    local componentEntity = Utils.CreateProp(data.model,{x = self.cache.pedCoords.x, y = self.cache.pedCoords.y, z = self.cache.pedCoords.z - 5.0}, 0.0, true, true)
     SetEntityCollision(componentEntity, false, false)
     AttachEntityToEntity(componentEntity, weaponEntity, bone, 0.0 , 0.0 , 0.00, 0.0 , 0.0 , 0.0, true, true, false, false, 1, true)
 
@@ -1010,7 +1010,7 @@ function Weap:CreateWeapon(data,objectComponents)
         end
     })
 
-    local weaponEntity = Utils:CreateProp(data.model, {x = self.cache.pedCoords.x, y = self.cache.pedCoords.y, z = self.cache.pedCoords.z - 5.0}, 0.0, true, true)
+    local weaponEntity = Utils.CreateProp(data.model, {x = self.cache.pedCoords.x, y = self.cache.pedCoords.y, z = self.cache.pedCoords.z - 5.0}, 0.0, true, true)
     SetEntityCollision(weaponEntity, false, false)
     entitys.weapon = weaponEntity
 
@@ -1022,7 +1022,7 @@ function Weap:CreateWeapon(data,objectComponents)
                     for _,component in pairs(hashs) do
                         local data = self:GetComponentFromHas(component)
                         if not data then
-                            Utils:Debug({"Invalid weapon component", v.name:upper()})
+                            Utils.Debug({"Invalid weapon component", v.name:upper()})
                             break
                         end
                         entitys[data.type or data.bone] = self:CreateComponent(weaponEntity,data)
@@ -1033,7 +1033,7 @@ function Weap:CreateWeapon(data,objectComponents)
             for k,v in pairs(objectComponents) do
                 local data = self.components[v.component:upper()]
                 if not data then
-                    Utils:Debug({"Invalid weapon component", v.component})
+                    Utils.Debug({"Invalid weapon component", v.component})
                     break
                 end
                 entitys[data.type or data.bone] = self:CreateComponent(weaponEntity,data)
@@ -1045,7 +1045,7 @@ function Weap:CreateWeapon(data,objectComponents)
         for k,v in pairs(data.components) do
             local data = self.components[v:upper()]
             if not data then
-                Utils:Debug({"Invalid weapon component", v:upper()})
+                Utils.Debug({"Invalid weapon component", v:upper()})
                 break
             end
 
@@ -1100,7 +1100,7 @@ end
 
 function Weap:GetClipItem()
     for k,v in pairs(self.AmmoClips) do
-        if v[self.weapon] and Utils:GetItemCount(k) > 0 then
+        if v[self.weapon] and Utils.GetItemCount(k) > 0 then
             return k
         end
     end

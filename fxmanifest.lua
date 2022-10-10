@@ -30,3 +30,7 @@ server_scripts {
 	'config/serverConfig.lua',
 	'server/*.lua'
 }
+
+dependencies {
+    "plouffe_lib"
+}
