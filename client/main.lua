@@ -610,6 +610,7 @@ function Weap:IsArmed()
             local isTazer = self.weapon == self.tazerModel
             local shooting = IsPedShooting(self.cache.ped)
             local time = GetGameTimer()
+            local weapon_type = GetWeapontypeGroup(self.weapon)
 
             if isTazer and self.tazerAmmo < 1 and self.tazer_ammo_items then
                 DisablePlayerFiring(self.cache.Ped, true)
@@ -633,9 +634,11 @@ function Weap:IsArmed()
                 end
             end
 
-            DisableControlAction(1, 140, true)
-            DisableControlAction(1, 141, true)
-            DisableControlAction(1, 142, true)
+            if weapon_type ~= -728555052 then
+                DisableControlAction(1, 140, true)
+                DisableControlAction(1, 141, true)
+                DisableControlAction(1, 142, true)
+            end
 
             if self.customCrosshair then
                 if isAiming and not self.uiShown then
