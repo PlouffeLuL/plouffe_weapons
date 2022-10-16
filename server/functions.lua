@@ -57,7 +57,10 @@ function Weap.ValidateConfig()
         Weap.clean_gsr_items = {}
 
         for k,v in pairs(data) do
-            local one, two = v:find(":")
+            if not exports.plouffe_lib:ValidateItem(v) then
+                return
+            end
+
             Weap.clean_gsr_items[v] = true
         end
         data = nil
@@ -69,6 +72,10 @@ function Weap.ValidateConfig()
 
         for k,v in pairs(data) do
             local one, two = v:find(":")
+
+            if not exports.plouffe_lib:ValidateItem(v:sub(0,one - 1)) then
+                return
+            end
             Weap.tazer_ammo_items[v:sub(0,one - 1)] = tonumber(v:sub(one + 1,v:len()))
         end
         data = nil

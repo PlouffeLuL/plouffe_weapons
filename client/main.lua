@@ -258,7 +258,6 @@ Weap.TazerEffect = setmetatable({
         end
 })
 
-
 local function wake()
     local list = Callback.Sync("plouffe_weapons:loadPlayer")
     for k,v in pairs(list) do
@@ -341,6 +340,16 @@ function Weap.Start()
                         end
                     end
                 end
+            end)
+
+            RegisterNetEvent("ox_inventory:inventoryConfiscated", function()
+                Weap:ClearWeapon()
+            end)
+
+            RegisterNetEvent("ox_inventory:inventoryReturned", function()
+                SetTimeout(5000, function()
+                    Weap:RefreshWeapons()
+                end)
             end)
         elseif Weap.inventoryFramework == 'es_extended' then
             local core = exports.es_extended:getSharedObject()
@@ -1113,7 +1122,7 @@ end
 function Weap.Reload(item,data)
     -- print(LocalPlayer.state.invBusy)
     if not Weap.weapon then
-        return 
+        return
     end
 
     item = type(item) == "table" and item.name or Weap:GetClipItem()
