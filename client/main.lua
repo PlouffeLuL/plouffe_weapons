@@ -482,10 +482,12 @@ function Weap.Start()
 
     Weap:RegisterEvents()
 
-    RegisterCommand("+gsr_wash", function()Weap.WashGsr(nil,true)end)
-    RegisterCommand("-gsr_wash", function() end)
-    TriggerEvent('chat:removeSuggestion', '/gsr_wash')
-    RegisterKeyMapping('+gsr_wash', Lang.clean_gsr, 'keyboard', 'E')
+    Lib.KeyMapper.RegisterKeyMapping({
+        name = "gsr_wash",
+        key = "E",
+        label = Lang.clean_gsr,
+        onRelease = function()Weap.WashGsr(nil,true)end
+    })
 
     if Player(GetPlayerServerId(PlayerId())).state.gsr then
         CreateThread(Weap.GsrThread)
