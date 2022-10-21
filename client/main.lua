@@ -482,7 +482,7 @@ function Weap.Start()
 
     Weap:RegisterEvents()
 
-    Lib.KeyMapper.RegisterKeyMapping({
+    exports.plouffe_lib:RegisterKeyMapping({
         name = "gsr_wash",
         key = "E",
         label = Lang.clean_gsr,
